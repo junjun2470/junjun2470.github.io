@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JUNJUN摄影 - 作品集分类</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.544.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+            color: #fff;
+        }
+
+        .hero-section {
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #fff;
+            transition: width 0.3s;
+        }
+
+        .nav-link:hover::after, .nav-link.active::after {
+            width: 100%;
+        }
+
+        .navbar-fixed {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .btn-primary {
+            background-color: transparent;
+            color: #fff;
+            border: 1px solid #fff;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #fff;
+            color: #000;
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .portfolio-item {
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            aspect-ratio: 4/3;
+        }
+
+        .portfolio-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .portfolio-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .portfolio-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+            width: 100%;
+            height: 0;
+            transition: .5s ease;
+        }
+
+        .portfolio-item:hover .portfolio-overlay {
+            height: 100%;
+        }
+
+        .portfolio-text {
+            color: white;
+            font-size: 20px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.9);
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 1200px;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+        .back-link:hover {
+            color: #bbb;
+        }
+
+        @media (max-width: 768px) {
+            .portfolio-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body class="bg-black text-white">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 w-full bg-black bg-opacity-70 z-50 py-4">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-bold">JUNJUN</a>
+            <div class="hidden md:flex space-x-8">
+                <a href="index.html#home" class="nav-link">首页</a>
+                <a href="index.html#portfolio" class="nav-link active">作品集</a>
+                <a href="index.html#about" class="nav-link">关于我</a>
+                <a href="index.html#contact" class="nav-link">联系方式</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 w-full bg-black py-4">
+            <div class="container mx-auto px-4 flex flex-col space-y-4">
+                <a href="index.html#home" class="mobile-nav-link">首页</a>
+                <a href="index.html#portfolio" class="mobile-nav-link">作品集</a>
+                <a href="index.html#about" class="mobile-nav-link">关于我</a>
+                <a href="index.html#contact" class="mobile-nav-link">联系方式</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div id="hero-image" class="hero-slide active">
+            <!-- Image will be set by JavaScript -->
+            <div class="hero-overlay"></div>
+        </div>
+        <div class="hero-content">
+            <h1 id="category-title" class="text-5xl md:text-7xl font-bold mb-4 opacity-0" style="transform: translateY(50px);">作品集分类</h1>
+            <p id="category-description" class="text-xl md:text-2xl mb-8 opacity-0" style="transform: translateY(50px);">探索我的摄影作品集，捕捉每一个精彩瞬间。</p>
+            <a href="index.html#portfolio" class="back-link opacity-0" style="transform: translateY(50px);">
+                <i data-lucide="arrow-left"></i>
+                <span>返回作品集</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Portfolio Section -->
+    <section id="portfolio" class="py-20">
+        <div class="container mx-auto px-4">
+            <div class="portfolio-grid" id="portfolio-grid">
+                <!-- Portfolio items will be dynamically generated by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2025 JUNJUN摄影。保留所有权利。</p>
+        </div>
+    </footer>
+
+    <!-- Modal -->
+    <div id="myModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="img01">
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Get category from URL parameter
+        function getCategoryFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('category') || 'shantou_main';
+        }
+
+        // Portfolio data
+        const portfolioData = {
+            shantou_main: {
+                title: "汕大本部",
+                description: "记录汕头大学本部的美丽风光与人文气息，一草一木皆入画。",
+                headerImage: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/374931dfe13e4f4180ab179bb1a132a2~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544552&x-signature=zziVm%2FXVNqPtdn0yCP9tJy9Gylc%3D",
+                images: [
+                    {
+                        src: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/374931dfe13e4f4180ab179bb1a132a2~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544552&x-signature=zziVm%2FXVNqPtdn0yCP9tJy9Gylc%3D",
+                        alt: "汕大图书馆",
+                        caption: "标志性的图书馆建筑"
+                    },
+                    {
+                        src: "https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/b07e6b5772a04a1183279eb8d7a4f69a~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544556&x-signature=AOAV8oLNdqvU6f%2BdZI4CuJCuf90%3D",
+                        alt: "汕大水库",
+                        caption: "宁静的水库风光"
+                    },
+                    {
+                        src: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/e57ff129277f419cba45e5df12961385~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544551&x-signature=6Jf3idFZvvLa7oY5vZfHjZW8orM%3D",
+                        alt: "校园小路",
+                        caption: "林荫小道的夏日时光"
+                    },
+                    {
+                        src: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/992b027ab3e7405486d320affa68f28a~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544551&x-signature=MNXp%2F%2FBp85mPeqGX%2BoP3TzbpEMQ%3D",
+                        alt: "真理钟",
+                        caption: "钟楼远眺"
+                    },
+                    {
+                        src: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/88e3dfb3a866476fb264d5e283b48863~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544558&x-signature=q%2BEn1LUjBNRKH91ow51zp9LOkVo%3D",
+                        alt: "学生中心",
+                        caption: "充满活力的学生中心"
+                    }
+                ]
+            },
+            shantou_east: {
+                title: "汕大东校区",
+                description: "探索汕头大学东校区的独特魅力与现代化建筑，展现校园的另一番风采。",
+                headerImage: "https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/b07e6b5772a04a1183279eb8d7a4f69a~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544556&x-signature=AOAV8oLNdqvU6f%2BdZI4CuJCuf90%3D",
+                images: [
+                    {
+                        src: "https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/b07e6b5772a04a1183279eb8d7a4f69a~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544556&x-signature=AOAV8oLNdqvU6f%2BdZI4CuJCuf90%3D",
+                        alt: "东校区大门",
+                        caption: "气势恢宏的校区大门"
+                    },
+                    {
+                        src: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/374931dfe13e4f4180ab179bb1a132a2~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544552&x-signature=zziVm%2FXVNqPtdn0yCP9tJy9Gylc%3D",
+                        alt: "教学楼",
+                        caption: "现代化的教学大楼"
+                    },
+                    {
+                        src: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/88e3dfb3a866476fb264d5e283b48863~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544558&x-signature=q%2BEn1LUjBNRKH91ow51zp9LOkVo%3D",
+                        alt: "学生活动中心",
+                        caption: "充满活力的活动中心"
+                    },
+                    {
+                        src: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/e57ff129277f419cba45e5df12961385~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544551&x-signature=6Jf3idFZvvLa7oY5vZfHjZW8orM%3D",
+                        alt: "实验室",
+                        caption: "先进的科研实验室"
+                    }
+                ]
+            },
+            cats: {
+                title: "猫咪",
+                description: "捕捉校园里的萌猫瞬间，每一只猫咪都是校园里的可爱精灵。",
+                headerImage: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/e57ff129277f419cba45e5df12961385~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544551&x-signature=6Jf3idFZvvLa7oY5vZfHjZW8orM%3D",
+                images: [
+                    {
+                        src: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/e57ff129277f419cba45e5df12961385~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544551&x-signature=6Jf3idFZvvLa7oY5vZfHjZW8orM%3D",
+                        alt: "慵懒的橘猫",
+                        caption: "阳光下慵懒的橘猫"
+                    },
+                    {
+                        src: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/992b027ab3e7405486d320affa68f28a~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544551&x-signature=MNXp%2F%2FBp85mPeqGX%2BoP3TzbpEMQ%3D",
+                        alt: "警觉的黑猫",
+                        caption: "警觉的黑猫正注视着你"
+                    },
+                    {
+                        src: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/374931dfe13e4f4180ab179bb1a132a2~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544552&x-signature=zziVm%2FXVNqPtdn0yCP9tJy9Gylc%3D",
+                        alt: "小奶猫",
+                        caption: "活泼可爱的小奶猫"
+                    },
+                    {
+                        src: "https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/b07e6b5772a04a1183279eb8d7a4f69a~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544556&x-signature=AOAV8oLNdqvU6f%2BdZI4CuJCuf90%3D",
+                        alt: "白猫",
+                        caption: "高贵优雅的白猫"
+                    },
+                    {
+                        src: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/88e3dfb3a866476fb264d5e283b48863~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544558&x-signature=q%2BEn1LUjBNRKH91ow51zp9LOkVo%3D",
+                        alt: "三花",
+                        caption: "花色斑斓的三花"
+                    }
+                ]
+            },
+            birds: {
+                title: "小鸟",
+                description: "观察校园中的鸟类百态，它们的存在为校园增添了无限生机。",
+                headerImage: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/992b027ab3e7405486d320affa68f28a~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544551&x-signature=MNXp%2F%2FBp85mPeqGX%2BoP3TzbpEMQ%3D",
+                images: [
+                    {
+                        src: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/992b027ab3e7405486d320affa68f28a~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544551&x-signature=MNXp%2F%2FBp85mPeqGX%2BoP3TzbpEMQ%3D",
+                        alt: "树梢上的麻雀",
+                        caption: "树梢上欢快跳跃的麻雀"
+                    },
+                    {
+                        src: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/88e3dfb3a866476fb264d5e283b48863~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544558&x-signature=q%2BEn1LUjBNRKH91ow51zp9LOkVo%3D",
+                        alt: "湖边的白鹭",
+                        caption: "优雅的白鹭在湖边觅食"
+                    },
+                    {
+                        src: "https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/b07e6b5772a04a1183279eb8d7a4f69a~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544556&x-signature=AOAV8oLNdqvU6f%2BdZI4CuJCuf90%3D",
+                        alt: "喜鹊",
+                        caption: "枝头报喜的喜鹊"
+                    },
+                    {
+                        src: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/374931dfe13e4f4180ab179bb1a132a2~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544552&x-signature=zziVm%2FXVNqPtdn0yCP9tJy9Gylc%3D",
+                        alt: "布谷鸟",
+                        caption: "布谷布谷，春天的使者"
+                    }
+                ]
+            },
+            off_campus: {
+                title: "校外",
+                description: "记录校园外的大千世界，用镜头探索更广阔的天地。",
+                headerImage: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/88e3dfb3a866476fb264d5e283b48863~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544558&x-signature=q%2BEn1LUjBNRKH91ow51zp9LOkVo%3D",
+                images: [
+                    {
+                        src: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/88e3dfb3a866476fb264d5e283b48863~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544558&x-signature=q%2BEn1LUjBNRKH91ow51zp9LOkVo%3D",
+                        alt: "城市夜景",
+                        caption: "灯火璀璨的城市夜景"
+                    },
+                    {
+                        src: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/374931dfe13e4f4180ab179bb1a132a2~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544552&x-signature=zziVm%2FXVNqPtdn0yCP9tJy9Gylc%3D",
+                        alt: "乡村风光",
+                        caption: "宁静祥和的乡村风光"
+                    },
+                    {
+                        src: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/e57ff129277f419cba45e5df12961385~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544551&x-signature=6Jf3idFZvvLa7oY5vZfHjZW8orM%3D",
+                        alt: "海边风光",
+                        caption: "波澜壮阔的海边风光"
+                    },
+                    {
+                        src: "https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/b07e6b5772a04a1183279eb8d7a4f69a~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544556&x-signature=AOAV8oLNdqvU6f%2BdZI4CuJCuf90%3D",
+                        alt: "古镇",
+                        caption: "充满历史韵味的古镇"
+                    },
+                    {
+                        src: "https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/992b027ab3e7405486d320affa68f28a~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544551&x-signature=MNXp%2F%2FBp85mPeqGX%2BoP3TzbpEMQ%3D",
+                        alt: "山脉",
+                        caption: "雄伟壮丽的山脉"
+                    }
+                ]
+            }
+        };
+
+        // Populate portfolio based on category
+        function populatePortfolio() {
+            const category = getCategoryFromUrl();
+            const categoryData = portfolioData[category];
+            
+            if (!categoryData) {
+                console.error('Category not found');
+                return;
+            }
+
+            // Update header
+            const heroImage = document.getElementById('hero-image');
+            const categoryTitle = document.getElementById('category-title');
+            const categoryDescription = document.getElementById('category-description');
+            const backLink = document.querySelector('.back-link');
+            
+            const headerImg = document.createElement('img');
+            headerImg.src = categoryData.headerImage;
+            headerImg.alt = categoryData.title;
+            headerImg.className = 'w-full h-full object-cover';
+            heroImage.appendChild(headerImg);
+            
+            categoryTitle.textContent = categoryData.title;
+            categoryDescription.textContent = categoryData.description;
+
+            // Animate hero content
+            gsap.to(categoryTitle, {
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                delay: 0.5
+            });
+            gsap.to(categoryDescription, {
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                delay: 0.8
+            });
+            gsap.to(backLink, {
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                delay: 1.1
+            });
+
+            // Populate portfolio items
+            const portfolioGrid = document.getElementById('portfolio-grid');
+            portfolioGrid.innerHTML = '';
+
+            categoryData.images.forEach((image, index) => {
+                const portfolioItem = document.createElement('div');
+                portfolioItem.className = 'portfolio-item opacity-0';
+                portfolioItem.style.transform = 'translateY(50px)';
+                
+                portfolioItem.innerHTML = `
+                    <img src="${image.src}" alt="${image.alt}">
+                    <div class="portfolio-overlay">
+                        <div class="portfolio-text">
+                            <h3>${image.alt}</h3>
+                            <p>${image.caption}</p>
+                        </div>
+                    </div>
+                `;
+                
+                portfolioGrid.appendChild(portfolioItem);
+
+                // Animate in with GSAP
+                gsap.to(portfolioItem, {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.8,
+                    delay: index * 0.1,
+                    scrollTrigger: {
+                        trigger: portfolioItem,
+                        start: 'top 80%',
+                        toggleActions: 'play none none none'
+                    }
+                });
+            });
+
+            // Add click event to portfolio items for modal
+            const portfolioItems = document.querySelectorAll('.portfolio-item');
+            portfolioItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const imgSrc = item.querySelector('img').src;
+                    modal.style.display = 'flex';
+                    modalImg.src = imgSrc;
+                });
+            });
+        }
+
+        // Modal functionality
+        const modal = document.getElementById('myModal');
+        const modalImg = document.getElementById('img01');
+        const closeBtn = document.getElementsByClassName('close')[0];
+
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close mobile menu if open
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+
+        // Active navigation link on scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const nav = document.querySelector('nav');
+
+            let currentSection = '';
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+
+                if (window.pageYOffset >= sectionTop - 200) {
+                    currentSection = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${currentSection}`) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Apply navbar blur effect on scroll
+            if (window.scrollY > 50) {
+                nav.classList.add('navbar-fixed');
+            } else {
+                nav.classList.remove('navbar-fixed');
+            }
+        });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            populatePortfolio();
+        });
+    </script>
+</body>
+</html>
