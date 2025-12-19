@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JUNJUN摄影</title>
+    <!-- 预加载关键资源 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    
+    <!-- 字体和样式 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- 延迟加载非关键脚本 -->
+    <script src="https://cdn.tailwindcss.com" defer></script>
+    <!-- 使用更稳定的 lucide 图标库 CDN 链接 -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" defer></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0A0A0F;
+            color: #fff;
+        }
+
+        .hero-section {
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .hero-slide.active {
+            opacity: 1;
+        }
+
+        .hero-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .hero-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #fff;
+            transition: width 0.3s;
+        }
+
+        .nav-link:hover::after, .nav-link.active::after {
+            width: 100%;
+        }
+
+        .navbar-fixed {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .btn-primary {
+            background-color: transparent;
+            color: #fff;
+            border: 1px solid #fff;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #fff;
+            color: #000;
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .portfolio-item {
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .portfolio-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .portfolio-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .portfolio-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+            width: 100%;
+            height: 0;
+            transition: .5s ease;
+            pointer-events: none; /* 确保overlay不拦截鼠标事件 */
+        }
+
+        .portfolio-title, .portfolio-caption {
+            pointer-events: none; /* 确保文字也不拦截鼠标事件 */
+        }
+
+        .portfolio-item:hover .portfolio-overlay {
+            height: 100%;
+        }
+
+        .portfolio-text {
+            color: white;
+            font-size: 20px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        
+
+        .about-section {
+            padding: 6rem 0;
+        }
+
+        .contact-section {
+            padding: 6rem 0;
+        }
+
+        .social-link {
+            color: #fff;
+            font-size: 24px;
+            margin: 0 10px;
+            transition: color 0.3s;
+        }
+
+        .social-link:hover {
+            color: #bbb;
+        }
+
+        @media (max-width: 768px) {
+            .portfolio-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+
+        /* 图片占位符样式 */
+        .image-placeholder {
+            background-color: #1a1a2e;
+            background-image: linear-gradient(135deg, #1a1a2e 25%, #16213e 25%, #16213e 50%, #1a1a2e 50%, #1a1a2e 75%, #16213e 75%, #16213e 100%);
+            background-size: 40px 40px;
+            animation: placeholdershine 2s linear infinite;
+        }
+
+        @keyframes placeholdershine {
+            0% { background-position: 0 0; }
+            100% { background-position: 40px 40px; }
+        }
+
+        /* 优化动画性能 */
+        .transition-transform {
+            will-change: transform;
+        }
+
+        .hero-slide, .hero-content h1, .hero-content p {
+            will-change: opacity, transform;
+        }
+
+        /* 减少重排和重绘 */
+        .category-card, .nav-link {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        /* 优化滚动性能 */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* 优化字体渲染 */
+        body {
+            font-synthesis: none;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+</head>
+<body class="bg-[#0A0AF] text-white">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 w-full bg-[#0A0AF] bg-opacity-70 z-50 py-4">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold">JUNJUN</a>
+            <div class="hidden md:flex space-x-8">
+                <a href="#home" class="nav-link active">首页</a>
+                <a href="#portfolio" class="nav-link">作品集</a>
+                <a href="#about" class="nav-link">关于我</a>
+                <a href="#contact" class="nav-link">联系方式</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden absolute top-full right-0 min-w-fit bg-[#0A0AF] bg-opacity-70 backdrop-filter blur(10px) -webkit-backdrop-filter blur(10px) py-4 px-6 shadow-lg rounded-lg">
+            <div class="flex flex-col space-y-4">
+                <a href="#home" class="mobile-nav-link">首页</a>
+                <a href="#portfolio" class="mobile-nav-link">作品集</a>
+                <a href="#about" class="mobile-nav-link">关于我</a>
+                <a href="#contact" class="mobile-nav-link">联系方式</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="hero-slide active">
+                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/88e3dfb3a866476fb264d5e283b48863~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544558&x-signature=q%2BEn1LUjBNRKH91ow51zp9LOkVo%3D" alt="Mountain Landscape">
+                <div class="hero-overlay"></div>
+            </div>
+            <div class="hero-slide">
+                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/992b027ab3e7405486d320affa68f28a~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544551&x-signature=MNXp%2F%2FBp85mPeqGX%2BoP3TzbpEMQ%3D" alt="Portrait">
+                <div class="hero-overlay"></div>
+            </div>
+            <div class="hero-slide">
+                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/e57ff129277f419cba45e5df12961385~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544551&x-signature=6Jf3idFZvvLa7oY5vZfHjZW8orM%3D" alt="Street Photography">
+                <div class="hero-overlay"></div>
+            </div>
+        <div class="hero-content">
+            <h1 class="text-5xl md:text-7xl font-bold mb-4 opacity-0" style="transform: translateY(50px);">JUNJUN</h1>
+            <p class="text-xl md:text-2xl mb-8 opacity-0" style="transform: translateY(50px);">练习时长两年半</p>
+            <a href="#portfolio" class="btn-primary opacity-0" style="transform: translateY(50px);">再点一下就爆炸</a>
+        </div>
+    </section>
+
+    <!-- Portfolio Section -->
+    <section id="portfolio" class="py-20">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center mb-2">作品集</h2>
+            <p class="text-sm md:text-base text-gray-300 text-center mb-12 italic">不定时上新</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                <a href="portfolio-category.html?category=shantou_main" class="category-card group relative rounded-lg overflow-hidden shadow-2xl h-64 md:h-80">
+                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/374931dfe13e4f4180ab179bb1a132a2~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544552&x-signature=zziVm%2FXVNqPtdn0yCP9tJy9Gylc%3D" alt="汕大本部" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 text-left">
+                        <h3 class="text-3xl font-bold text-white mb-2 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">汕大本部</h3>
+                        <p class="text-lg text-gray-200 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 delay-75">记录校本部的美丽风光</p>
+                    </div>
+                </a>
+                <a href="portfolio-category.html?category=shantou_east" class="category-card group relative rounded-lg overflow-hidden shadow-2xl h-64 md:h-80">
+                    <img src="https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/b07e6b5772a04a1183279eb8d7a4f69a~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544556&x-signature=AOAV8oLNdqvU6f%2BdZI4CuJCuf90%3D" alt="汕大东校区" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 text-left">
+                        <h3 class="text-3xl font-bold text-white mb-2 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">汕大东校区</h3>
+                        <p class="text-lg text-gray-200 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 delay-75">探索东校区的独特魅力</p>
+                    </div>
+                </a>
+                <a href="portfolio-category.html?category=cats" class="category-card group relative rounded-lg overflow-hidden shadow-2xl h-64 md:h-80">
+                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/e57ff129277f419cba45e5df12961385~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544551&x-signature=6Jf3idFZvvLa7oY5vZfHjZW8orM%3D" alt="猫咪" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 text-left">
+                        <h3 class="text-3xl font-bold text-white mb-2 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">猫咪</h3>
+                        <p class="text-lg text-gray-200 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 delay-75">捕捉校园里的萌猫瞬间</p>
+                    </div>
+                </a>
+                <a href="portfolio-category.html?category=birds" class="category-card group relative rounded-lg overflow-hidden shadow-2xl h-64 md:h-80">
+                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/992b027ab3e7405486d320affa68f28a~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544551&x-signature=MNXp%2F%2FBp85mPeqGX%2BoP3TzbpEMQ%3D" alt="小鸟" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 text-left">
+                        <h3 class="text-3xl font-bold text-white mb-2 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">小鸟</h3>
+                        <p class="text-lg text-gray-200 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 delay-75">观察校园中的鸟类百态</p>
+                    </div>
+                </a>
+                <a href="portfolio-category.html?category=off_campus" class="category-card group relative rounded-lg overflow-hidden shadow-2xl h-64 md:h-80">
+                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/88e3dfb3a866476fb264d5e283b48863~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544558&x-signature=q%2BEn1LUjBNRKH91ow51zp9LOkVo%3D" alt="校外" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 text-left">
+                        <h3 class="text-3xl font-bold text-white mb-2 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">校外</h3>
+                        <p class="text-lg text-gray-200 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 delay-75">记录校园外的大千世界</p>
+                    </div>
+                </a>
+                <a href="portfolio-category.html?category=advertisement" class="category-card group relative rounded-lg overflow-hidden shadow-2xl h-64 md:h-80">
+                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/88e3dfb3a866476fb264d5e283b48863~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544558&x-signature=q%2BEn1LUjBNRKH91ow51zp9LOkVo%3D" alt="广告位招租" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 text-left">
+                        <h3 class="text-3xl font-bold text-white mb-2 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">广告位招租</h3>
+                        <p class="text-lg text-gray-200 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 delay-75">欢迎咨询合作事宜</p>
+                    </div>
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-10 md:mb-0 opacity-0" style="transform: translateX(-50px);">
+                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/e57ff129277f419cba45e5df12961385~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544551&x-signature=6Jf3idFZvvLa7oY5vZfHjZW8orM%3D" alt="Photographer" class="rounded-lg shadow-xl mx-auto" style="max-width: 300px;" loading="lazy">
+                </div>
+                <div class="md:w-1/2 md:pl-12 opacity-0" style="transform: translateX(50px);">
+                    <h2 class="text-4xl font-bold mb-6">关于我</h2>
+                    <p class="text-lg mb-4">哎呦喂，本鸽可是摄影界“资深黑粉”一枚！入行超过2.5年，从一台傻瓜相机开始疯狂输出，结果一不小心把热情玩成了事业——这波操作连我自己都直呼“基尼太美”！</p>
+                    <p class="text-lg mb-4">专注领域？ 风光、人像加街头，每天扛着相机到处“侦查”，就为了逮住那束“浑元功法”级别的绝美光线！构图？那必须得是背带裤中分球同款黄金比例，随手一拍都是能让小黑子们集体打 call 的神图！</p>
+                    <p class="text-lg mb-6">在我这儿，拍照可不是简单“咔嚓”！那是要封印情绪、绑架瞬间，把记忆熬成永不过期的“律师函警告”，让每一张照片都够黑子们循环播放一辈子！</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-4xl font-bold mb-12">联系我</h2>
+            <p class="text-lg mb-8 max-w-2xl mx-auto">如果您有兴趣与我合作或有任何问题，请随时联系我。我始终乐于讨论新项目、创意想法或参与您的愿景的机会。</p>
+            <div class="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-12">
+                <a href="mailto:alex.chen@example.com" class="flex items-center justify-center space-x-2">
+                    <i data-lucide="mail" class="w-6 h-6"></i>
+                    <span>junjunjunjun</span>
+                </a>
+                <a href="tel:+1234567890" class="flex items-center justify-center space-x-2">
+                    <i data-lucide="phone" class="w-6 h-6"></i>
+                    <span>+88888888888</span>
+                </a>
+            </div>
+            <div class="mt-12">
+                <h3 class="text-2xl font-bold mb-6">关注我</h3>
+                <div class="flex justify-center space-x-6">
+                    <button class="social-link" onclick="showSocialModal('xiaohongshu')"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></button>
+                    <button class="social-link" onclick="showSocialModal('douyin')"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-[#0A0AF] py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2025 JUNJUN。保留所有权利。</p>
+        </div>
+    </footer>
+
+    <!-- Social Media Modal -->
+    <div id="socialModal" class="modal">
+        <div class="modal-content bg-[#0A0AF] p-8 rounded-lg max-w-md mx-auto my-auto">
+            <span class="close text-white text-4xl absolute top-4 right-4 cursor-pointer">&times;</span>
+            <div id="socialModalContent">
+                <!-- Content will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ------------------------------------------------------
+        // 页面初始化
+        // ------------------------------------------------------
+        document.addEventListener('DOMContentLoaded', function() {
+            // 启用图片懒加载
+            if ('IntersectionObserver' in window) {
+                const lazyImages = document.querySelectorAll('img[loading="lazy"]');
+                
+                const imageObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const img = entry.target;
+                            img.src = img.dataset.src || img.src;
+                            img.classList.remove('lazy');
+                            imageObserver.unobserve(img);
+                        }
+                    });
+                });
+                
+                lazyImages.forEach(img => {
+                    imageObserver.observe(img);
+                });
+            }
+            
+            // 初始化Lucide图标
+            lucide.createIcons();
+            
+            // 初始化移动端菜单
+            initMobileMenu();
+            
+            // 初始化英雄区轮播
+            initHeroSlider();
+            
+            // 初始化GSAP动画
+            initGSAPAnimations();
+            
+            // 初始化作品集筛选
+            initPortfolioFilter();
+            
+            // 初始化社交媒体模态框
+            initSocialModal();
+            
+            // 初始化平滑滚动
+            initSmoothScrolling();
+            
+            // 初始化导航栏滚动效果
+            initNavbarScrollEffects();
+            
+            // 优化低端设备性能
+            optimizePerformance();
+        });
+
+        /**
+         * 初始化移动端菜单
+         */
+        function initMobileMenu() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+
+        /**
+         * 初始化英雄区轮播
+         */
+        function initHeroSlider() {
+            const slides = document.querySelectorAll('.hero-slide');
+            let currentSlide = 0;
+
+            /**
+             * 显示指定索引的幻灯片
+             * @param {number} index - 幻灯片索引
+             */
+            function showSlide(index) {
+                slides.forEach((slide, i) => {
+                    slide.classList.toggle('active', i === index);
+                });
+            }
+
+            /**
+             * 显示下一张幻灯片
+             */
+            function nextSlide() {
+                currentSlide = (currentSlide + 1) % slides.length;
+                showSlide(currentSlide);
+            }
+
+            // 每5秒切换一张幻灯片
+            setInterval(nextSlide, 5000);
+        }
+
+        /**
+         * 初始化GSAP动画
+         */
+        function initGSAPAnimations() {
+            // 英雄区内容动画
+            gsap.to('.hero-content h1', {
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                delay: 0.5
+            });
+            gsap.to('.hero-content p', {
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                delay: 0.8
+            });
+            gsap.to('.hero-content a', {
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                delay: 1.1
+            });
+
+            // 作品集项目动画
+            gsap.utils.toArray('.portfolio-item').forEach((item, i) => {
+                gsap.fromTo(item, 
+                    { opacity: 0, y: 50 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.8,
+                        scrollTrigger: {
+                            trigger: item,
+                            start: 'top 80%',
+                            toggleActions: 'play none none none'
+                        },
+                        delay: i * 0.1
+                    }
+                );
+            });
+
+            // 关于我部分动画
+            gsap.fromTo('#about .md\\:w-1\\/2:first-child', 
+                { opacity: 0, x: -50 },
+                {
+                    opacity: 1,
+                    x: 0,
+                    duration: 1,
+                    scrollTrigger: {
+                        trigger: '#about',
+                        start: 'top 70%',
+                        toggleActions: 'play none none none'
+                    }
+                }
+            );
+            gsap.fromTo('#about .md\\:w-1\\/2:last-child', 
+                { opacity: 0, x: 50 },
+                {
+                    opacity: 1,
+                    x: 0,
+                    duration: 1,
+                    scrollTrigger: {
+                        trigger: '#about',
+                        start: 'top 70%',
+                        toggleActions: 'play none none none'
+                    },
+                    delay: 0.3
+                }
+            );
+
+            // 联系部分动画
+            gsap.fromTo('#contact h2', 
+                { opacity: 0, y: 30 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1,
+                    scrollTrigger: {
+                        trigger: '#contact',
+                        start: 'top 80%',
+                        toggleActions: 'play none none none'
+                    }
+                }
+            );
+            gsap.fromTo('#contact p', 
+                { opacity: 0, y: 30 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1,
+                    scrollTrigger: {
+                        trigger: '#contact',
+                        start: 'top 80%',
+                        toggleActions: 'play none none none'
+                    },
+                    delay: 0.2
+                }
+            );
+            gsap.fromTo('#contact .flex.flex-col', 
+                { opacity: 0, y: 30 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1,
+                    scrollTrigger: {
+                        trigger: '#contact',
+                        start: 'top 80%',
+                        toggleActions: 'play none none none'
+                    },
+                    delay: 0.4
+                }
+            );
+        }
+
+        /**
+         * 初始化作品集筛选
+         */
+        function initPortfolioFilter() {
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const portfolioItems = document.querySelectorAll('.portfolio-item');
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // 更新活跃按钮状态
+                    filterBtns.forEach(b => b.classList.remove('active', 'bg-gray-700'));
+                    btn.classList.add('active', 'bg-gray-700');
+
+                    const filter = btn.getAttribute('data-filter');
+
+                    // 使用动画筛选作品集项目
+                    portfolioItems.forEach(item => {
+                        if (filter === 'all' || item.getAttribute('data-category') === filter) {
+                            gsap.to(item, {
+                                opacity: 1,
+                                scale: 1,
+                                duration: 0.5,
+                                display: 'block'
+                            });
+                        } else {
+                            gsap.to(item, {
+                                opacity: 0,
+                                scale: 0.8,
+                                duration: 0.5,
+                                onComplete: () => {
+                                    item.style.display = 'none';
+                                }
+                            });
+                        }
+                    });
+                });
+            });
+        }
+
+        /**
+         * 初始化社交媒体模态框
+         */
+        function initSocialModal() {
+            const socialModal = document.getElementById('socialModal');
+            const socialModalContent = document.getElementById('socialModalContent');
+            const socialModalCloseBtn = socialModal.querySelector('.close');
+
+            /**
+             * 显示有关特定社交媒体平台信息的模态框。
+             * @param {string} platform - 社交媒体平台（例如：'xiaohongshu', 'douyin'）。
+             */
+            window.showSocialModal = function(platform) {
+                const socialData = {
+                    xiaohongshu: {
+                        name: '小红书',
+                        description: '在小红书上，我分享我的摄影作品、拍摄心得和后期技巧。欢迎关注我，一起交流摄影的乐趣！',
+                        handle: '@JUNJUN_PHOTO'
+                    },
+                    douyin: {
+                        name: '抖音',
+                        description: '抖音是我分享短视频作品的地方，记录拍摄过程中的有趣瞬间和幕后故事。快来抖音找我吧！',
+                        handle: '@JUNJUN_PHOTO'
+                    }
+                };
+
+                const data = socialData[platform];
+                socialModalContent.innerHTML = `
+                    <h3 class="text-2xl font-bold mb-4">${data.name}</h3>
+                    <p class="mb-4">${data.description}</p>
+                    <p class="text-lg font-semibold">${data.handle}</p>
+                `;
+                socialModal.style.display = 'flex';
+            }
+
+            // 关闭社交媒体模态框事件监听器
+            socialModalCloseBtn.addEventListener('click', () => {
+                socialModal.style.display = 'none';
+            });
+
+            window.addEventListener('click', (e) => {
+                if (e.target === socialModal) {
+                    socialModal.style.display = 'none';
+                }
+            });
+        }
+
+        /**
+         * 初始化平滑滚动
+         */
+        function initSmoothScrolling() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80, // 导航栏偏移量
+                            behavior: 'smooth'
+                        });
+                        
+                        // 如果移动端菜单打开，则关闭它
+                        const mobileMenu = document.getElementById('mobile-menu');
+                        if (!mobileMenu.classList.contains('hidden')) {
+                            mobileMenu.classList.add('hidden');
+                        }
+                    }
+                });
+            });
+        }
+
+        /**
+         * 防抖函数，用于优化滚动事件
+         */
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        /**
+         * 初始化导航栏滚动效果
+         */
+        function initNavbarScrollEffects() {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const nav = document.querySelector('nav');
+
+            // 使用防抖优化滚动事件
+            window.addEventListener('scroll', debounce(() => {
+                let currentSection = '';
+
+                // 确定当前视图中的部分
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+
+                    if (window.pageYOffset >= sectionTop - 200) {
+                        currentSection = section.getAttribute('id');
+                    }
+                });
+
+                // 更新活跃导航链接
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${currentSection}`) {
+                        link.classList.add('active');
+                    }
+                });
+
+                // 在滚动时应用导航栏模糊效果
+                if (window.scrollY > 50) {
+                    nav.classList.add('navbar-fixed');
+                } else {
+                    nav.classList.remove('navbar-fixed');
+                }
+            }, 100));
+        }
+
+        /**
+         * 优化性能，特别是在低端设备上
+         */
+        function optimizePerformance() {
+            // 检测设备性能
+            const isLowEndDevice = (function() {
+                // 简单的性能检测
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                
+                if (!gl) {
+                    return true; // 不支持WebGL，可能是低端设备
+                }
+                
+                const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                if (!debugInfo) {
+                    return false;
+                }
+                
+                const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL).toLowerCase();
+                // 检测常见的低端设备GPU
+                const lowEndGPUs = ['intel hd graphics 3000', 'intel hd graphics 4000', 'radeon hd 6000', 'geforce 9400m'];
+                
+                return lowEndGPUs.some(gpu => renderer.includes(gpu));
+            })();
+            
+            // 如果是低端设备，禁用一些动画效果
+            if (isLowEndDevice) {
+                document.body.classList.add('low-end-device');
+                
+                // 简化CSS动画
+                const style = document.createElement('style');
+                style.textContent = `
+                    .low-end-device * {
+                        animation-duration: 0.1s !important;
+                        transition-duration: 0.1s !important;
+                    }
+                    
+                    .low-end-device .portfolio-overlay {
+                        transform: translateY(0) !important;
+                        background: rgba(0,0,0,0.6) !important;
+                    }
+                    
+                    .low-end-device .hero-slide {
+                        background-attachment: scroll !important;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+
+
+
+
+    </script>
+</body>
+</html>
