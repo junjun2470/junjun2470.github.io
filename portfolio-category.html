@@ -34,6 +34,20 @@
             overflow: hidden;
         }
 
+        .hero-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .hero-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
         .hero-content {
             position: absolute;
             top: 50%;
@@ -50,6 +64,30 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #0A0A0F;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
         }
 
         .nav-link {
@@ -322,7 +360,7 @@
             <div class="hero-overlay"></div>
         </div>
         <div class="hero-content">
-            <h1 id="category-title" class="text-5xl md:text-7xl font-bold mb-4 opacity-0" style="transform: translateY(50px);">作品集分类</h1>
+            <h1 id="category-title" class="font-bold mb-4 opacity-0" style="transform: translateY(50px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: clamp(2rem, 8vw, 4rem);">作品集分类</h1>
             <p id="category-description" class="text-xl md:text-2xl mb-8 opacity-0" style="transform: translateY(50px);">探索我的摄影作品集，捕捉每一个精彩瞬间。</p>
             <a href="index.html#portfolio" class="back-link opacity-0" style="transform: translateY(50px);">
                 <i data-lucide="arrow-left"></i>
@@ -1003,11 +1041,9 @@
             animation: slideOut 0.3s ease;
         }
     </style>
-</head>
-<body class="bg-[#0A0AF] text-white">
 
     <!-- Navigation -->
-    <nav class="fixed top-0 left-0 w-full bg-[#0A0AF] bg-opacity-70 z-50 py-4">
+    <nav class="fixed top-0 left-0 w-full bg-[#0A0A0F] bg-opacity-70 z-50 py-4">
         <div class="container mx-auto px-4 flex justify-between items-center">
             <a href="index.html" class="text-2xl font-bold">JUNJUN</a>
             <div class="hidden md:flex space-x-8">
@@ -1020,7 +1056,7 @@
                 <i data-lucide="menu"></i>
             </button>
         </div>
-        <div id="mobile-menu" class="hidden md:hidden absolute top-full right-0 min-w-fit bg-[#0A0AF] bg-opacity-70 backdrop-filter blur(10px) -webkit-backdrop-filter blur(10px) py-4 px-6 shadow-lg rounded-lg">
+        <div id="mobile-menu" class="hidden md:hidden absolute top-full right-0 min-w-fit bg-[#0A0A0F] bg-opacity-70 backdrop-filter blur(10px) -webkit-backdrop-filter blur(10px) py-4 px-6 shadow-lg rounded-lg">
             <div class="flex flex-col space-y-4">
                 <a href="index.html#home" class="mobile-nav-link">首页</a>
                 <a href="index.html#portfolio" class="mobile-nav-link">作品集</a>
@@ -1300,7 +1336,6 @@
                     // 检查缓存中是否已有该图片
                     const cache = imageCacheManager.getCache();
                     if (cache[image.src] && cache[image.src].data === 'loaded') {
-                        console.log(`图片已缓存: ${image.alt}`);
                         return;
                     }
                     
@@ -1316,7 +1351,6 @@
                     img.onload = function() {
                         // 图片加载成功，添加到缓存
                         imageCacheManager.setCache(image.src, 'loaded');
-                        console.log(`图片预加载成功: ${image.alt}`);
                     };
                     
                     img.onerror = function() {
@@ -1491,7 +1525,6 @@
                         const parsed = JSON.parse(cacheData);
                         if (Date.now() - parsed.timestamp > this.cacheExpiry) {
                             localStorage.removeItem(this.cacheKey);
-                            console.log('已清除过期图片缓存');
                         }
                     }
                 } catch (e) {
@@ -1580,8 +1613,10 @@
 
         /**
          * 初始化全屏图片查看器功能
+         * 该功能允许用户点击图片后在全屏模式下查看，并支持缩放、拖拽、导航等交互
          */
         function initFullscreenViewer() {
+            // 获取查看器相关DOM元素
             const fullscreenViewer = document.getElementById('fullscreen-viewer');
             const fullscreenImage = document.getElementById('fullscreen-image');
             const fullscreenTitle = document.getElementById('fullscreen-title');
@@ -1589,36 +1624,42 @@
             const fullscreenIndex = document.getElementById('fullscreen-index');
             const viewerContent = document.querySelector('.fullscreen-viewer-content');
             
-            let currentImages = [];
-            let currentIndex = 0;
-            let touchStartX = 0;
-            let touchEndX = 0;
-            let scale = 1;
-            let isZoomed = false;
-            let initialDistance = 0;
-            let translateX = 0;
-            let translateY = 0;
-            let isDragging = false;
-            let dragStartX = 0;
-            let dragStartY = 0;
-            let dragStartTranslateX = 0;
-            let dragStartTranslateY = 0;
-            let animationFrameId = null;
+            // 状态变量
+            let currentImages = []; // 当前查看的图片数组
+            let currentIndex = 0; // 当前图片索引
+            let touchStartX = 0; // 触摸开始X坐标
+            let touchEndX = 0; // 触摸结束X坐标
+            let scale = 1; // 缩放比例
+            let isZoomed = false; // 是否已缩放
+            let initialDistance = 0; // 初始触摸距离（用于双指缩放）
+            let translateX = 0; // X轴偏移量
+            let translateY = 0; // Y轴偏移量
+            let isDragging = false; // 是否正在拖拽
+            let dragStartX = 0; // 拖拽开始X坐标
+            let dragStartY = 0; // 拖拽开始Y坐标
+            let dragStartTranslateX = 0; // 拖拽开始时的X偏移量
+            let dragStartTranslateY = 0; // 拖拽开始时的Y偏移量
+            let animationFrameId = null; // 动画帧ID
             
-            // 打开查看器 - 基于视口的动态定位系统
+            /**
+             * 打开查看器 - 基于视口的动态定位系统
+             * @param {Array} images 图片数组
+             * @param {number} index 当前图片索引
+             * @param {HTMLElement} clickedElement 被点击的元素
+             */
             window.openFullscreenViewer = function(images, index, clickedElement) {
                 currentImages = images;
                 currentIndex = index;
                 
                 const viewerContent = document.querySelector('.fullscreen-viewer-content');
                 
-                // 记录当前滚动位置
+                // 记录当前滚动位置，以便关闭时恢复
                 window.savedScrollPosition = {
                     x: window.scrollX,
                     y: window.scrollY
                 };
                 
-                // 重置所有样式
+                // 重置所有样式，避免之前的动画影响
                 viewerContent.style.transition = '';
                 viewerContent.style.transform = '';
                 viewerContent.style.opacity = '';
@@ -1649,14 +1690,15 @@
                 // 禁止页面滚动
                 document.body.style.overflow = 'hidden';
                 
-                // 延迟一帧后开始动画
+                // 延迟一帧后开始动画，确保样式已应用
                 requestAnimationFrame(() => {
-                    // 移动到视口中心并放大到1
+                    // 移动到视口中心并放大到1（淡入效果）
                     viewerContent.style.transform = 'translate(-50%, -50%) scale(1)';
                     viewerContent.style.opacity = '1';
                     viewerContent.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease';
                 });
                 
+                // 更新查看器内容
                 updateViewer();
                 
                 // 添加缩放功能事件监听
@@ -2012,18 +2054,6 @@
                 } else {
                     fullscreenImage.style.imageRendering = 'auto';
                 }
-                
-                console.log('图片适配信息:', {
-                    屏幕尺寸: `${screenWidth} × ${screenHeight} (${isPortrait ? '竖屏' : '横屏'})`,
-                    弹窗尺寸: `${content.clientWidth} × ${content.clientHeight}`,
-                    容器尺寸: `${container.clientWidth} × ${container.clientHeight}`,
-                    图片尺寸: `${imgWidth} × ${imgHeight}`,
-                    显示尺寸: `${Math.round(displayWidth)} × ${Math.round(displayHeight)}`,
-                    图片比例: imgRatio.toFixed(2),
-                    容器比例: containerRatio.toFixed(2),
-                    设备类型: isMobile ? '手机' : isTablet ? '平板' : '桌面',
-                    方向: isPortrait ? '竖屏' : '横屏'
-                });
             }
             
             // 重置缩放
@@ -2454,13 +2484,6 @@
                     case 'ArrowRight':
                         showNextImage();
                         break;
-                }
-            });
-            
-            // 点击查看器外部关闭
-            fullscreenViewer.addEventListener('click', function(e) {
-                if (e.target === fullscreenViewer) {
-                    closeViewer();
                 }
             });
         }
