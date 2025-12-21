@@ -1,0 +1,464 @@
+{
+  "shantou_main": {
+    "title": "汕大本部",
+    "description": "记录汕头大学本部的美丽风光与人文气息，一草一木皆入画。",
+    "headerImage": "https://a.imgckr.com/2025/12/20/YUS05.jpg",
+    "images": [
+      {
+        "src": "https://a.imgckr.com/2025/12/18/Y9UOL.jpg",
+        "alt": "校园小路",
+        "caption": "林荫小道的夏日时光"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/18/Y9BJ5.jpg",
+        "alt": "真理钟",
+        "caption": "钟楼远眺"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/18/Y9i7f.jpg",
+        "alt": "学生中心",
+        "caption": "充满活力的学生中心"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/18/Y9Y4h.jpg",
+        "alt": "校园花园",
+        "caption": "四季花开的校园花园"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/18/Y9XAX.jpg",
+        "alt": "运动场",
+        "caption": "青春活力的运动场"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/18/Y9vCm.jpg",
+        "alt": "教学楼",
+        "caption": "现代化的教学楼群"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9Zia.jpg",
+        "alt": "校园夜景",
+        "caption": "华灯初上的校园夜景"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y97TJ.jpg",
+        "alt": "图书馆内部",
+        "caption": "静谧的图书馆内部"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9p6M.jpg",
+        "alt": "校园雕塑",
+        "caption": "富有艺术感的校园雕塑"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9qSR.jpg",
+        "alt": "湖心亭",
+        "caption": "诗意盎然的湖心亭"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9hPU.jpg",
+        "alt": "校园长廊",
+        "caption": "典雅的校园长廊"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9Shs.jpg",
+        "alt": "湖边白鹭",
+        "caption": "优雅的白鹭在湖边觅食"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/YUJde.jpg",
+        "alt": "枝头喜鹊",
+        "caption": "枝头报喜的喜鹊"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/YUiiq.jpg",
+        "alt": "乡村风光",
+        "caption": "宁静祥和的乡村风光"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/YU9PE.jpg",
+        "alt": "海边风光",
+        "caption": "波澜壮阔的海边风光"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUZbF.jpg",
+        "alt": "YUZbF",
+        "caption": "汕大本部风光"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUqUy.jpg",
+        "alt": "YUqUy",
+        "caption": "汕大本部风光"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUCud.jpg",
+        "alt": "YUCud",
+        "caption": "汕大本部风光"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUhgi.jpg",
+        "alt": "YUhgi",
+        "caption": "汕大本部风光"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUgqv.jpg",
+        "alt": "YUgqv",
+        "caption": "汕大本部风光"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUxo8.jpg",
+        "alt": "YUxo8",
+        "caption": "汕大本部风光"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YU7y0.jpg",
+        "alt": "YU7y0",
+        "caption": "汕大本部风光"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUS05.jpg",
+        "alt": "YUS05",
+        "caption": "汕大本部风光"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUkrn.jpg",
+        "alt": "YUkrn",
+        "caption": "汕大本部风光"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YY0w7.jpg",
+        "alt": "YY0w7",
+        "caption": "汕大本部风光"
+      }
+    ]
+  },
+  "shantou_east": {
+    "title": "汕大东校区",
+    "description": "探索汕头大学东校区的独特魅力与现代化建筑，展现校园的另一番风采。",
+    "headerImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+    "images": [
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9a8u.jpg",
+        "alt": "东校区景观1",
+        "caption": "东校区优美景观"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y94Ed.jpg",
+        "alt": "东校区景观2",
+        "caption": "东校区建筑风貌"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9mev.jpg",
+        "alt": "东校区景观3",
+        "caption": "东校区环境特色"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9KQK.jpg",
+        "alt": "东校区景观4",
+        "caption": "东校区现代建筑"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y915C.jpg",
+        "alt": "东校区景观5",
+        "caption": "东校区校园风光"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9EZF.jpg",
+        "alt": "东校区景观6",
+        "caption": "东校区细节展示"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9fXi.jpg",
+        "alt": "东校区景观7",
+        "caption": "东校区空间布局"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9way.jpg",
+        "alt": "东校区景观8",
+        "caption": "东校区人文气息"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9lN8.jpg",
+        "alt": "东校区景观9",
+        "caption": "东校区整体风貌"
+      }
+    ]
+  },
+  "cats": {
+    "title": "猫咪",
+    "description": "捕捉校园里的萌猫瞬间，每一只猫咪都是校园里的可爱精灵。",
+    "headerImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+    "images": [
+      {
+        "src": "https://a.imgckr.com/2025/12/18/YikM0.jpg",
+        "alt": "小小",
+        "caption": "萌萌的大眼睛"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9e5R.jpg",
+        "alt": "肥波",
+        "caption": "咪看看怎么回事"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9jWg.jpg",
+        "alt": "二白",
+        "caption": "不是200"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9OzM.jpg",
+        "alt": "白茶",
+        "caption": "高贵优雅青眼白猫"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9TQJ.jpg",
+        "alt": "罐罐",
+        "caption": "擦鞋服务火热进行中"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9rOG.jpg",
+        "alt": "小白",
+        "caption": "享受阳光ing"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9sEs.jpg",
+        "alt": "菲菲",
+        "caption": "和咪一起等待日落"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9zCS.jpg",
+        "alt": "鸡翅",
+        "caption": "火候控制刚刚好"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9PAl.jpg",
+        "alt": "蕉太狼",
+        "caption": "神情略呆"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9Rae.jpg",
+        "alt": "爱心咪",
+        "caption": "咪的身上有爱心"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9WcE.jpg",
+        "alt": "大宝",
+        "caption": "你瞅啥"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/19/Y9oMq.jpg",
+        "alt": "麻薯",
+        "caption": "板板正正"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUT98.jpg",
+        "alt": "YUT98",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUnR0.jpg",
+        "alt": "YUnR0",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUOdy.jpg",
+        "alt": "YUOdy",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YULKi.jpg",
+        "alt": "YULKi",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUrG5.jpg",
+        "alt": "YUrG5",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUskn.jpg",
+        "alt": "YUskn",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YU8T7.jpg",
+        "alt": "YU8T7",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUPff.jpg",
+        "alt": "YUPff",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YURpL.jpg",
+        "alt": "YURpL",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUFjh.jpg",
+        "alt": "YUFjh",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUWKm.jpg",
+        "alt": "YUWKm",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUaIX.jpg",
+        "alt": "YUaIX",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUmVU.jpg",
+        "alt": "YUmVU",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUK9g.jpg",
+        "alt": "YUK9g",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUbRa.jpg",
+        "alt": "YUbRa",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YU4kM.jpg",
+        "alt": "YU4kM",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUHnR.jpg",
+        "alt": "YUHnR",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUfwJ.jpg",
+        "alt": "YUfwJ",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YU5KS.jpg",
+        "alt": "YU5KS",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUwpG.jpg",
+        "alt": "YUwpG",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YU6Il.jpg",
+        "alt": "YU6Il",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YU2us.jpg",
+        "alt": "YU2us",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUVUe.jpg",
+        "alt": "YUVUe",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUyRq.jpg",
+        "alt": "YUyRq",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUN0u.jpg",
+        "alt": "YUN0u",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUDVE.jpg",
+        "alt": "YUDVE",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUIwK.jpg",
+        "alt": "YUIwK",
+        "caption": "猫咪写真"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/20/YUdnC.jpg",
+        "alt": "YUdnC",
+        "caption": "猫咪写真"
+      }
+    ]
+  },
+  "birds": {
+    "title": "小鸟",
+    "description": "观察校园中的鸟类百态，它们的存在为校园增添了无限生机。",
+    "headerImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+    "images": [
+      {
+        "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+        "alt": "树梢上的麻雀",
+        "caption": "树梢上欢快跳跃的麻雀"
+      },
+      {
+        "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+        "alt": "湖边的白鹭",
+        "caption": "优雅的白鹭在湖边觅食"
+      },
+      {
+        "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+        "alt": "喜鹊",
+        "caption": "枝头报喜的喜鹊"
+      },
+      {
+        "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+        "alt": "布谷鸟",
+        "caption": "布谷布谷，春天的使者"
+      }
+    ]
+  },
+  "off_campus": {
+    "title": "校外",
+    "description": "记录校园外的大千世界，用镜头探索更广阔的天地。",
+    "headerImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+    "images": [
+      {
+        "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+        "alt": "城市夜景",
+        "caption": "灯火璀璨的城市夜景"
+      },
+      {
+        "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+        "alt": "乡村风光",
+        "caption": "宁静祥和的乡村风光"
+      },
+      {
+        "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+        "alt": "海边风光",
+        "caption": "波澜壮阔的海边风光"
+      },
+      {
+        "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+        "alt": "古镇",
+        "caption": "充满历史韵味的古镇"
+      },
+      {
+        "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+        "alt": "山脉",
+        "caption": "雄伟壮丽的山脉"
+      }
+    ]
+  },
+  "advertisement": {
+    "title": "广告位招租",
+    "description": "欢迎各类品牌合作，共同打造优质内容。",
+    "headerImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+    "images": [
+      {
+        "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+        "alt": "广告位招租",
+        "caption": "黄金位置，期待与您合作"
+      }
+    ]
+  }
+}
