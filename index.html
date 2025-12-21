@@ -147,7 +147,7 @@
 
         .portfolio-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 1rem;
         }
 
@@ -198,8 +198,6 @@
             transform: translate(-50%, -50%);
             text-align: center;
         }
-
-        
 
         .about-section {
             padding: 6rem 0;
@@ -267,7 +265,7 @@
         }
     </style>
 </head>
-<body class="bg-[#0A0A0F] text-white">
+<body class="bg-[#0A0A0F] text-white overflow-x-hidden">
 
     <!-- Navigation -->
     <nav class="fixed top-0 left-0 w-full bg-[#0A0A0F] bg-opacity-70 z-50 py-4">
@@ -283,7 +281,7 @@
                 <i data-lucide="menu"></i>
             </button>
         </div>
-        <div id="mobile-menu" class="hidden md:hidden absolute top-full right-0 min-w-fit bg-[#0A0A0F] bg-opacity-70 backdrop-filter blur(10px) -webkit-backdrop-filter blur(10px) py-4 px-6 shadow-lg rounded-lg">
+        <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 right-0 bg-[#0A0A0F] bg-opacity-70 backdrop-filter blur(10px) -webkit-backdrop-filter blur(10px) py-4 px-6 shadow-lg rounded-lg">
             <div class="flex flex-col space-y-4">
                 <a href="#home" class="mobile-nav-link">首页</a>
                 <a href="#portfolio" class="mobile-nav-link">作品集</a>
@@ -433,7 +431,7 @@
     </section>
 
     <!-- Footer -->
-    <footer class="bg-[#0A0AF] py-8">
+    <footer class="bg-[#0A0A0F] py-8">
         <div class="container mx-auto px-4 text-center">
             <p>&copy; 2025 JUNJUN。保留所有权利。</p>
         </div>

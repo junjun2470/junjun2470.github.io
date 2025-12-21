@@ -41,38 +41,6 @@
             transform: translate(-50%, -50%);
             text-align: center;
             z-index: 10;
-            padding: 0 20px;
-        }
-
-        /* 移动端响应式样式 */
-        @media (max-width: 768px) {
-            .hero-section {
-                height: 80vh;
-            }
-            
-            #category-title {
-                font-size: 2.5rem !important;
-                margin-bottom: 1rem;
-            }
-            
-            #category-description {
-                font-size: 1rem !important;
-                margin-bottom: 2rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .hero-section {
-                height: 70vh;
-            }
-            
-            #category-title {
-                font-size: 2rem !important;
-            }
-            
-            #category-description {
-                font-size: 0.875rem !important;
-            }
         }
 
         .hero-overlay {
@@ -102,28 +70,6 @@
         }
 
         .nav-link:hover::after, .nav-link.active::after {
-            width: 100%;
-        }
-
-        .mobile-nav-link {
-            position: relative;
-            transition: color 0.3s;
-            padding: 0.5rem 0;
-            display: block;
-        }
-
-        .mobile-nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: 0;
-            left: 0;
-            background-color: #fff;
-            transition: width 0.3s;
-        }
-
-        .mobile-nav-link:hover::after {
             width: 100%;
         }
 
@@ -367,29 +313,7 @@
 </head>
 <body class="bg-[#0A0A0F] text-white flex flex-col min-h-screen">
 
-    <!-- Navigation -->
-    <nav class="fixed top-0 left-0 w-full bg-[#0A0A0F] bg-opacity-70 z-50 py-4">
-        <div class="container mx-auto px-4 flex justify-between items-center">
-            <a href="index.html" class="text-2xl font-bold">JUNJUN</a>
-            <div class="hidden md:flex space-x-8">
-                <a href="index.html#home" class="nav-link">首页</a>
-                <a href="index.html#portfolio" class="nav-link active">作品集</a>
-                <a href="index.html#about" class="nav-link">关于我</a>
-                <a href="index.html#contact" class="nav-link">联系方式</a>
-            </div>
-            <button id="mobile-menu-button" class="md:hidden">
-                <i data-lucide="menu"></i>
-            </button>
-        </div>
-        <div id="mobile-menu" class="hidden md:hidden absolute top-full right-0 min-w-fit bg-[#0A0A0F] bg-opacity-70 backdrop-filter blur(10px) -webkit-backdrop-filter blur(10px) py-4 px-6 shadow-lg rounded-lg">
-            <div class="flex flex-col space-y-4">
-                <a href="index.html#home" class="mobile-nav-link">首页</a>
-                <a href="index.html#portfolio" class="mobile-nav-link">作品集</a>
-                <a href="index.html#about" class="mobile-nav-link">关于我</a>
-                <a href="index.html#contact" class="mobile-nav-link">联系方式</a>
-            </div>
-        </div>
-    </nav>
+
 
     <!-- Hero Section -->
     <section id="home" class="hero-section">
@@ -1086,6 +1010,26 @@
     <nav class="fixed top-0 left-0 w-full bg-[#0A0AF] bg-opacity-70 z-50 py-4">
         <div class="container mx-auto px-4 flex justify-between items-center">
             <a href="index.html" class="text-2xl font-bold">JUNJUN</a>
+            <div class="hidden md:flex space-x-8">
+                <a href="index.html#home" class="nav-link">首页</a>
+                <a href="index.html#portfolio" class="nav-link active">作品集</a>
+                <a href="index.html#about" class="nav-link">关于我</a>
+                <a href="index.html#contact" class="nav-link">联系方式</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden absolute top-full right-0 min-w-fit bg-[#0A0AF] bg-opacity-70 backdrop-filter blur(10px) -webkit-backdrop-filter blur(10px) py-4 px-6 shadow-lg rounded-lg">
+            <div class="flex flex-col space-y-4">
+                <a href="index.html#home" class="mobile-nav-link">首页</a>
+                <a href="index.html#portfolio" class="mobile-nav-link">作品集</a>
+                <a href="index.html#about" class="mobile-nav-link">关于我</a>
+                <a href="index.html#contact" class="mobile-nav-link">联系方式</a>
+            </div>
+        </div>
+    </nav>
+
     <script>
         // 初始化 Lucide 图标
         function initLucideIcons() {
@@ -1111,12 +1055,16 @@
         // ------------------------------------------------------
         // Mobile Menu Functionality
         // ------------------------------------------------------
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
-        const mobileMenu = document.getElementById('mobile-menu');
+        function initMobileMenu() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
 
-        mobileMenuButton.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-        });
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', () => {
+                    mobileMenu.classList.toggle('hidden');
+                });
+            }
+        }
 
         // ------------------------------------------------------
         // 导航栏滚动效果
@@ -1237,6 +1185,9 @@
         // 初始化页面 - 加载数据并填充内容
         async function initPage() {
             try {
+                // 初始化移动端菜单
+                initMobileMenu();
+                
                 // 显示加载状态
                 const portfolioGrid = document.getElementById('portfolio-grid');
                 if (portfolioGrid) {
