@@ -103,7 +103,6 @@
         }
 
         .modal {
-            display: none;
             position: fixed;
             z-index: 1000;
             left: 0;
@@ -112,6 +111,15 @@
             height: 100%;
             overflow: auto;
             background-color: rgba(0, 0, 0, 0.8);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            display: flex;
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
         }
 
         .modal-content {
@@ -124,6 +132,14 @@
             max-width: 500px;
             border-radius: 8px;
             box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .modal.active .modal-content {
+            opacity: 1;
+            transform: scale(1);
         }
 
         .nav-link {
@@ -342,7 +358,7 @@
             <p class="text-sm md:text-base text-gray-300 text-center mb-12 italic">不定时上新</p>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
                 <a href="portfolio-category.html?category=shantou_main" class="category-card group relative rounded-lg overflow-hidden shadow-2xl h-64 md:h-80">
-                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/374931dfe13e4f4180ab179bb1a132a2~tplv-a9rns2rl98-image.image?rcl=20251217142211B3A2842FCF728BC7C6BF&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1768544552&x-signature=zziVm%2FXVNqPtdn0yCP9tJy9Gylc%3D" alt="汕大本部" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
+                    <img src="https://a.imgckr.com/2025/12/21/Yv16U.jpg" alt="汕大本部" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
                     <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70"></div>
                     <div class="absolute bottom-0 left-0 w-full p-6 text-left">
                         <h3 class="text-3xl font-bold text-white mb-2 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">汕大本部</h3>
@@ -350,7 +366,7 @@
                     </div>
                 </a>
                 <a href="portfolio-category.html?category=shantou_east" class="category-card group relative rounded-lg overflow-hidden shadow-2xl h-64 md:h-80">
-                    <img src="https://a.imgckr.com/2025/12/21/YYMvm.jpg" alt="汕大东校区" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
+                    <img src="https://a.imgckr.com/2025/12/21/YY3lR.jpg" alt="汕大东校区" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy">
                     <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70"></div>
                     <div class="absolute bottom-0 left-0 w-full p-6 text-left">
                         <h3 class="text-3xl font-bold text-white mb-2 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">汕大东校区</h3>
@@ -766,16 +782,16 @@
 
                 const data = socialData[platform];
                 socialModalContent.innerHTML = `
-                    <h3 class="text-2xl font-bold mb-4">${data.name}</h3>
-                    <p class="mb-4">${data.description}</p>
-                    <p class="text-lg font-semibold">${data.handle}</p>
-                `;
-                socialModal.style.display = 'flex';
+                <h3 class="text-2xl font-bold mb-4">${data.name}</h3>
+                <p class="mb-4">${data.description}</p>
+                <p class="text-lg font-semibold">${data.handle}</p>
+            `;
+            socialModal.classList.add('active');
             }
 
             window.addEventListener('click', (e) => {
                 if (e.target === socialModal) {
-                    socialModal.style.display = 'none';
+                    socialModal.classList.remove('active');
                 }
             });
         }
