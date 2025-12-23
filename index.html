@@ -50,6 +50,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            object-position: center;
         }
 
         /* 自拍轮播样式 */
@@ -100,6 +101,9 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
 
         .modal {
@@ -177,6 +181,8 @@
             font-weight: 500;
             letter-spacing: 1px;
             transition: all 0.3s;
+            white-space: nowrap;
+            display: inline-block;
         }
 
         .btn-primary:hover {
@@ -261,6 +267,70 @@
             .portfolio-grid {
                 grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             }
+        }
+
+        /* 导航栏响应式优化 */
+        @media (max-width: 1024px) {
+            nav .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            
+            nav .hidden.md\\:flex {
+                gap: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav .container {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+            
+            nav a.text-2xl {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            nav .container {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+            
+            nav a.text-2xl {
+                font-size: 1.25rem;
+            }
+            
+            #mobile-menu {
+                left: 0;
+                right: 0;
+                width: 100%;
+                max-width: none;
+                border-radius: 0 0 0.5rem 0.5rem;
+            }
+        }
+
+        /* 确保导航栏在不同屏幕宽度下都能正确显示 */
+        nav {
+            max-width: 100vw;
+            overflow-x: hidden;
+        }
+
+        nav .container {
+            max-width: 100%;
+            width: 100%;
+        }
+
+        /* 导航链接响应式字体大小 */
+        .nav-link {
+            font-size: clamp(0.875rem, 2vw, 1rem);
+        }
+
+        /* 移动端菜单链接优化 */
+        .mobile-nav-link {
+            font-size: clamp(1rem, 3vw, 1.125rem);
+            padding: 0.5rem 0;
         }
 
         /* 图片占位符样式 */
@@ -437,9 +507,11 @@
                 </div>
                 <div class="md:w-1/2 md:pl-12 opacity-0" style="transform: translateX(50px);">
                     <h2 class="text-4xl font-bold mb-6">关于我</h2>
-                    <p class="text-lg mb-4">哎呦喂，本鸽可是摄影界“资深黑粉”一枚！入行超过2.5年，从一台傻瓜相机开始疯狂输出，结果一不小心把热情玩成了事业——这波操作连我自己都直呼“基尼太美”！</p>
-                    <p class="text-lg mb-4">专注领域？ 风光、人像加街头，每天扛着相机到处“侦查”，就为了逮住那束“浑元功法”级别的绝美光线！构图？那必须得是背带裤中分球同款黄金比例，随手一拍都是能让小黑子们集体打 call 的神图！</p>
-                    <p class="text-lg mb-6">在我这儿，拍照可不是简单“咔嚓”！那是要封印情绪、绑架瞬间，把记忆熬成永不过期的“律师函警告”，让每一张照片都够黑子们循环播放一辈子！</p>
+                    <p class="text-lg mb-4">我的相机，更像是一个随身的笔记本。</p>
+                    <p class="text-lg mb-4">我不追逐远方的风暴或名山大川，只留心眼前的光线如何漫过桌角，树影怎样在午后斑驳了一地，以及一杯热水凉掉之前，那缕热气袅袅的形状。</p>
+                    <p class="text-lg mb-4">对我而言，摄影不是一门需要隆重登场的技艺，而是一种呼吸般自然的习惯。平凡的日常，能帮我把这个瞬间的质地、气味和心情，妥善地保管下来。</p>
+                    <p class="text-lg mb-4">世界的样子，大多藏在那些我们匆匆路过、未曾驻足的低语里。而我的全部愿望，就是拾起这些发着微光的平凡瞬间。</p>
+                    <p class="text-lg mb-6">如果你也相信，生活真正的诗意，不止在远方，就在此刻你我的目光所及之处。那么，很高兴我们以这样的方式相遇。</p>
                 </div>
             </div>
         </div>
@@ -514,45 +586,71 @@
             // 初始化Lucide图标
             lucide.createIcons();
             
-            // 初始化移动端菜单
-            initMobileMenu();
+            /**
+             * 初始化移动端菜单
+             */
+            function initMobileMenu() {
+                const mobileMenuButton = document.getElementById('mobile-menu-button');
+                const mobileMenu = document.getElementById('mobile-menu');
             
-            // 初始化英雄区轮播
-            initHeroSlider();
+                // 切换菜单显示/隐藏
+                mobileMenuButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    mobileMenu.classList.toggle('hidden');
+                    
+                    // 边界检查：确保菜单完全显示在视窗范围内
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        const menuRect = mobileMenu.getBoundingClientRect();
+                        const viewportWidth = window.innerWidth;
+                        const viewportHeight = window.innerHeight;
+                        
+                        // 如果菜单超出右侧边界，调整位置
+                        if (menuRect.right > viewportWidth) {
+                            const overflow = menuRect.right - viewportWidth;
+                            mobileMenu.style.left = 'auto';
+                            mobileMenu.style.right = '0';
+                        }
+                        
+                        // 如果菜单超出底部边界，调整位置
+                        if (menuRect.bottom > viewportHeight) {
+                            const overflow = menuRect.bottom - viewportHeight;
+                            mobileMenu.style.top = 'auto';
+                            mobileMenu.style.bottom = '0';
+                        }
+                    }
+                });
             
-            // 初始化自拍轮播
-            initSelfieSlider();
+                // 点击菜单内部不关闭
+                mobileMenu.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
             
-            // 初始化GSAP动画
-            initGSAPAnimations();
+                // 点击外部区域关闭菜单
+                document.addEventListener('click', (e) => {
+                    if (!mobileMenu.classList.contains('hidden') && 
+                        !mobileMenu.contains(e.target) && 
+                        !mobileMenuButton.contains(e.target)) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
             
-            // 初始化作品集筛选
-            initPortfolioFilter();
-            
-            // 初始化社交媒体模态框
-            initSocialModal();
-            
-            // 初始化平滑滚动
-            initSmoothScrolling();
-            
-            // 初始化导航栏滚动效果
-            initNavbarScrollEffects();
-            
-            // 优化低端设备性能
-            optimizePerformance();
-        });
-
-        /**
-         * 初始化移动端菜单
-         */
-        function initMobileMenu() {
-            const mobileMenuButton = document.getElementById('mobile-menu-button');
-            const mobileMenu = document.getElementById('mobile-menu');
-
-            mobileMenuButton.addEventListener('click', () => {
-                mobileMenu.classList.toggle('hidden');
-            });
-        }
+                // 窗口大小改变时重新检查边界
+                window.addEventListener('resize', () => {
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        const menuRect = mobileMenu.getBoundingClientRect();
+                        const viewportWidth = window.innerWidth;
+                        
+                        if (menuRect.right > viewportWidth) {
+                            mobileMenu.style.left = 'auto';
+                            mobileMenu.style.right = '0';
+                        } else {
+                            // 重置样式
+                            mobileMenu.style.left = '';
+                            mobileMenu.style.right = '';
+                        }
+                    }
+                });
+            }
 
         /**
          * 初始化通用轮播功能
@@ -935,8 +1033,17 @@
             }
         }
 
-
-
+        // 调用所有初始化函数
+        initMobileMenu();
+        initHeroSlider();
+        initSelfieSlider();
+        initGSAPAnimations();
+        initPortfolioFilter();
+        initSocialModal();
+        initSmoothScrolling();
+        initNavbarScrollEffects();
+        optimizePerformance();
+        }); // 结束 DOMContentLoaded 事件监听器
 
     </script>
 </body>
