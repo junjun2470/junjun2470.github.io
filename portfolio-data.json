@@ -1,7 +1,7 @@
 {
   "shantou_main": {
     "title": "汕大本部",
-    "description": "记录汕头大学本部的美丽风光与人文气息，一草一木皆入画。",
+    "description": "美丽风光与人文气息",
     "headerImage": "https://a.imgckr.com/2025/12/21/Yv16U.jpg",
     "images": [
       {
@@ -208,6 +208,11 @@
         "src": "https://a.imgckr.com/2025/12/26/Ye57y.jpg",
         "alt": "图书馆一角",
         "caption": "天蓝蓝的很舒服，随手拍"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/26/YTGGs.jpg",
+        "alt": "人工湖小屋",
+        "caption": "每次路过都要看两眼"
       }
     ]
   },
@@ -335,8 +340,8 @@
   },
   "cats": {
     "title": "猫咪",
-    "description": "捕捉校园里的萌猫瞬间，每一只猫咪都是校园里的可爱精灵。",
-    "headerImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+    "description": "捕捉萌猫瞬间，每一只猫咪都是可爱的精灵。",
+    "headerImage": "https://a.imgckr.com/2025/12/22/YXSWh.jpg",
     "images": [
       {
         "src": "https://a.imgckr.com/2025/12/22/Y3vFs.jpg",
@@ -1337,8 +1342,8 @@
   },
   "nature": {
     "title": "自然",
-    "description": "记录校园中的自然百态，展现大自然的生机与美丽。",
-    "headerImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+    "description": "自然百态，展现大自然的生机与美丽。",
+    "headerImage": "https://a.imgckr.com/2025/12/26/YT4Hg.jpg",
     "images": [
       {
         "src": "https://a.imgckr.com/2025/12/26/YedMf.jpg",
@@ -1524,14 +1529,19 @@
         "src": "https://a.imgckr.com/2025/12/26/YTfjU.jpg",
         "alt": "振翅鸭",
         "caption": "水很深，但它站在水面上"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/26/YTtdC.jpg",
+        "alt": "小熊猫",
+        "caption": "在树上吐舌睡大觉"
       }
     ]
   },
 
   "off_campus": {
     "title": "校外",
-    "description": "记录校园外的大千世界，用镜头探索更广阔的天地。",
-    "headerImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+    "description": "校园外的大千世界，更广阔的天地。",
+    "headerImage": "https://a.imgckr.com/2025/12/21/YvUOK.jpg",
     "images": [
       {
         "src": "https://a.imgckr.com/2025/12/21/YYtzU.jpg",
@@ -1637,6 +1647,36 @@
         "src": "https://a.imgckr.com/2025/12/26/YelzF.jpg",
         "alt": "公元博物馆",
         "caption": "展厅一角"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/26/YTVSS.jpg",
+        "alt": "小八",
+        "caption": "旁边是比格多栋"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/26/YTMfe.jpg",
+        "alt": "深中通道",
+        "caption": "深中通道"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/26/YTNhq.jpg",
+        "alt": "越秀公园",
+        "caption": "经典位置"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/26/YTDTl.jpg",
+        "alt": "海上的电塔",
+        "caption": "天空挺好看"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/26/YTIjE.jpg",
+        "alt": "涂鸦",
+        "caption": "乌桥岛"
+      },
+      {
+        "src": "https://a.imgckr.com/2025/12/26/YTgKu.jpg",
+        "alt": "比格多栋",
+        "caption": "旁边是小八"
       }
     ]
   },
