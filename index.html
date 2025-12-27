@@ -656,7 +656,9 @@
          * 初始化英雄区轮播
          */
         function initHeroSlider() {
-            initSlider('.hero-slide', 5000);
+            // 分别初始化横向和纵向轮播
+            initSlider('.landscape-carousel .hero-slide', 5000);
+            initSlider('.portrait-carousel .hero-slide', 5000);
         }
 
         /**
