@@ -2561,20 +2561,23 @@
             fullscreenImage.addEventListener('touchstart', handleTouchStart);
             fullscreenImage.addEventListener('touchend', handleTouchEnd);
             
-            // 点击图片左右两侧区域切换图片
+            // 点击图片左右两侧区域切换图片（仅在非移动端设备上生效）
             const imageContainer = document.querySelector('.fullscreen-viewer-image-container');
             imageContainer.addEventListener('click', function(e) {
-                const rect = imageContainer.getBoundingClientRect();
-                const clickX = e.clientX - rect.left;
-                const containerWidth = rect.width;
-                
-                // 左侧20%区域点击 - 显示上一张
-                if (clickX < containerWidth * 0.2) {
-                    showPrevImage();
-                }
-                // 右侧20%区域点击 - 显示下一张
-                else if (clickX > containerWidth * 0.8) {
-                    showNextImage();
+                // 检测屏幕宽度，仅在非移动端设备上执行点击切换逻辑
+                if (window.innerWidth >= 768) {
+                    const rect = imageContainer.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    const containerWidth = rect.width;
+                    
+                    // 左侧20%区域点击 - 显示上一张
+                    if (clickX < containerWidth * 0.2) {
+                        showPrevImage();
+                    }
+                    // 右侧20%区域点击 - 显示下一张
+                    else if (clickX > containerWidth * 0.8) {
+                        showNextImage();
+                    }
                 }
             });
             
