@@ -52,18 +52,21 @@ function applyTheme(theme) {
     const themeToggleBtn = document.getElementById('theme-toggle-btn');
     if (!themeToggleBtn) return;
 
-    if (theme === 'light') {
-        document.body.classList.add('light-mode');
-        themeToggleBtn.innerHTML = '<i data-lucide="sun"></i>';
-    } else {
-        document.body.classList.remove('light-mode');
-        themeToggleBtn.innerHTML = '<i data-lucide="moon"></i>';
-    }
+    // 使用 requestAnimationFrame 确保 DOM 更新是同步的
+    requestAnimationFrame(() => {
+        if (theme === 'light') {
+            document.body.classList.add('light-mode');
+            themeToggleBtn.innerHTML = '<i data-lucide="sun"></i>';
+        } else {
+            document.body.classList.remove('light-mode');
+            themeToggleBtn.innerHTML = '<i data-lucide="moon"></i>';
+        }
 
-    // 重新初始化 Lucide 图标
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
+        // 重新初始化 Lucide 图标
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
 }
 
 /**
@@ -442,9 +445,9 @@ function initSocialModal() {
 
         const data = socialData[platform];
         socialModalContent.innerHTML = `
-                <h3 class="text-2xl font-bold mb-4">${data.name}</h3>
-                <p class="mb-4">${data.description}</p>
-                <p class="text-lg font-semibold">${data.handle}</p>
+                <h3 class="text-2xl font-bold mb-4" style="color: var(--text-primary);">${data.name}</h3>
+                <p class="mb-4" style="color: var(--text-secondary);">${data.description}</p>
+                <p class="text-lg font-semibold" style="color: var(--text-primary);">${data.handle}</p>
             `;
         socialModal.classList.add('active');
     }

@@ -56,7 +56,6 @@
     <!-- 分类头部 -->
     <header id="category-header" class="relative h-screen overflow-hidden">
         <div id="header-bg" class="absolute inset-0 bg-cover bg-center transition-transform duration-700"></div>
-        <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-[#0A0A0F]"></div>
         <div class="relative z-10 h-full flex flex-col justify-center items-center text-center px-4">
             <h1 id="category-title" class="text-5xl md:text-7xl font-bold mb-4 opacity-0 translate-y-8"></h1>
             <p id="category-description" class="text-lg md:text-xl text-gray-200 opacity-0 translate-y-8"></p>
@@ -100,18 +99,18 @@
     <!-- 全屏查看器 -->
     <div id="fullscreen-viewer" class="fixed inset-0 z-[100] hidden">
         <!-- 背景 -->
-        <div class="absolute inset-0 bg-black/90 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" style="background-color: var(--overlay-bg, rgba(0, 0, 0, 0.9));"></div>
         
         <!-- 关闭按钮 -->
-        <button id="close-viewer" class="absolute top-4 right-4 z-20 text-white/80 hover:text-white transition-colors p-2">
+        <button id="close-viewer" class="absolute top-4 right-4 z-20 p-2 rounded-full transition-all opacity-70 hover:opacity-100" style="background-color: rgba(0, 0, 0, 0.5); color: #ffffff; border: none;">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
         
         <!-- 导航按钮 -->
-        <button id="prev-image" class="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 text-white/80 hover:text-white transition-colors p-2">
+        <button id="prev-image" class="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 p-2 rounded-full transition-all opacity-70 hover:opacity-100" style="background-color: rgba(0, 0, 0, 0.5); color: #ffffff; border: none;">
             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <button id="next-image" class="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 text-white/80 hover:text-white transition-colors p-2">
+        <button id="next-image" class="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 p-2 rounded-full transition-all opacity-70 hover:opacity-100" style="background-color: rgba(0, 0, 0, 0.5); color: #ffffff; border: none;">
             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
         </button>
         
@@ -123,25 +122,12 @@
         </div>
         
         <!-- 图片信息 -->
-        <div id="viewer-info" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 z-10">
+        <div id="viewer-info" class="absolute bottom-0 left-0 right-0 p-6 z-10">
             <div class="container mx-auto">
-                <h3 id="viewer-title" class="text-xl md:text-2xl font-bold mb-2"></h3>
-                <p id="viewer-caption" class="text-gray-300"></p>
-                <div id="viewer-counter" class="mt-2 text-sm text-gray-400"></div>
+                <h3 id="viewer-title" class="text-xl md:text-2xl font-bold mb-2" style="color: #FFFFFF !important; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);"></h3>
+                <p id="viewer-caption" class="text-gray-300" style="color: #e0e0e0 !important; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);"></p>
+                <div id="viewer-counter" class="mt-2 text-sm text-gray-400" style="color: #9ca3af !important; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);"></div>
             </div>
-        </div>
-        
-        <!-- 缩放控制 -->
-        <div class="absolute bottom-24 right-4 z-20 flex flex-col space-y-2">
-            <button id="zoom-in" class="bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-            </button>
-            <button id="zoom-out" class="bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>
-            </button>
-            <button id="zoom-reset" class="bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/></svg>
-            </button>
         </div>
     </div>
 

@@ -1,4 +1,4 @@
-// 全局变量
+// 性能优化：实现超高性能拖动系统
 let currentCategory = null;
 let currentImages = [];
 let filteredImages = [];
@@ -9,6 +9,84 @@ let dragStart = { x: 0, y: 0 };
 let dragOffset = { x: 0, y: 0 };
 let touchStart = { x: 0, y: 0 };
 let isZoomed = false;
+
+// 缓存DOM元素引用，避免重复查询
+let imageWrapper = null;
+let viewerContainer = null;
+
+// 事件监听器绑定标志，防止重复绑定
+let eventListenersBound = false;
+
+// 高性能渲染管道
+let isRendering = false;
+let renderQueue = [];
+let rafId = null;
+
+function getImageWrapper() {
+    if (!imageWrapper) {
+        imageWrapper = document.getElementById('viewer-image-wrapper');
+        // 强制启用硬件加速和合成层
+        imageWrapper.style.willChange = 'transform';
+        imageWrapper.style.backfaceVisibility = 'hidden';
+        imageWrapper.style.perspective = '1000px';
+        imageWrapper.style.transform = 'translateZ(0)';
+        // 创建合成层
+        imageWrapper.style.transformStyle = 'preserve-3d';
+    }
+    return imageWrapper;
+}
+
+function getViewerContainer() {
+    if (!viewerContainer) {
+        viewerContainer = document.getElementById('viewer-container');
+    }
+    return viewerContainer;
+}
+
+// 高效批量渲染
+function scheduleRender() {
+    if (isRendering) return;
+    
+    isRendering = true;
+    rafId = requestAnimationFrame(() => {
+        // 批量处理所有待渲染的变换
+        while (renderQueue.length > 0) {
+            const transform = renderQueue.shift();
+            applyTransformImmediate(transform);
+        }
+        isRendering = false;
+        rafId = null;
+    });
+}
+
+// 即时变换更新，加入渲染队列
+function updateTransformImmediate(transform) {
+    if (!transform) {
+        transform = {
+            x: dragOffset.x,
+            y: dragOffset.y,
+            scale: zoomLevel
+        };
+    }
+    
+    // 加入渲染队列
+    renderQueue.push(transform);
+    
+    // 如果没有正在渲染，立即开始
+    if (!isRendering && !rafId) {
+        scheduleRender();
+    }
+}
+
+// 应用变换，使用合成层优化
+function applyTransformImmediate(transform) {
+    const wrapper = getImageWrapper();
+    if (wrapper) {
+        // 使用transform3d和scale3d确保硬件加速
+        wrapper.style.transform = `translate3d(${transform.x}px, ${transform.y}px, 0) scale3d(${transform.scale}, ${transform.scale}, 1)`;
+        isZoomed = transform.scale > 1;
+    }
+}
 
 /**
  * 深浅模式切换功能
@@ -51,17 +129,50 @@ function applyTheme(theme) {
     const themeToggleBtn = document.getElementById('theme-toggle-btn');
     if (!themeToggleBtn) return;
 
-    if (theme === 'light') {
-        document.body.classList.add('light-mode');
-        themeToggleBtn.innerHTML = '<i data-lucide="sun"></i>';
-    } else {
-        document.body.classList.remove('light-mode');
-        themeToggleBtn.innerHTML = '<i data-lucide="moon"></i>';
-    }
+    // 使用 requestAnimationFrame 确保 DOM 更新是同步的
+    requestAnimationFrame(() => {
+        if (theme === 'light') {
+            document.body.classList.add('light-mode');
+            themeToggleBtn.innerHTML = '<i data-lucide="sun"></i>';
+        } else {
+            document.body.classList.remove('light-mode');
+            themeToggleBtn.innerHTML = '<i data-lucide="moon"></i>';
+        }
 
-    // 重新初始化 Lucide 图标
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
+        // 更新全屏查看器的样式
+        updateFullscreenViewerTheme(theme);
+
+        // 重新初始化 Lucide 图标
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
+}
+
+/**
+ * 更新全屏查看器的主题样式
+ * @param {string} theme - 'dark' 或 'light'
+ */
+function updateFullscreenViewerTheme(theme) {
+    const fullscreenViewer = document.getElementById('fullscreen-viewer');
+    if (!fullscreenViewer) return;
+
+    // 如果全屏查看器处于活动状态，强制更新其样式
+    if (fullscreenViewer.classList.contains('active')) {
+        // 触发重排以应用新的CSS变量
+        fullscreenViewer.style.display = 'none';
+        fullscreenViewer.offsetHeight; // 强制重排
+        
+        // 更新所有使用CSS变量的元素
+        const viewerElements = fullscreenViewer.querySelectorAll('*');
+        viewerElements.forEach(element => {
+            // 强制重新计算样式
+            element.style.display = 'none';
+            element.offsetHeight;
+            element.style.display = '';
+        });
+        
+        fullscreenViewer.style.display = '';
     }
 }
 
@@ -247,9 +358,21 @@ document.getElementById('reset-search').addEventListener('click', clearSearch);
 
 // 全屏查看器
 function openViewer(index) {
+    // 保存当前滚动位置
+    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+    document.body.dataset.scrollPosition = scrollPosition;
+    
     currentImageIndex = index;
     zoomLevel = 1;
     isZoomed = false;
+    dragOffset = { x: 0, y: 0 };
+    touchStart = { x: 0, y: 0 };
+    isDragging = false;
+    lastFrameTime = 0;
+    
+    // 重置缓存的DOM引用
+    imageWrapper = null;
+    viewerContainer = null;
     
     const viewer = document.getElementById('fullscreen-viewer');
     const image = document.getElementById('viewer-image');
@@ -264,29 +387,266 @@ function openViewer(index) {
     caption.textContent = imageData.caption;
     counter.textContent = `${index + 1} / ${filteredImages.length}`;
     
+    // 应用当前主题到全屏查看器
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    updateFullscreenViewerTheme(currentTheme);
+    
+    // 设置初始状态为透明和隐藏
+    viewer.style.opacity = '0';
+    viewer.style.visibility = 'hidden';
     viewer.classList.remove('hidden');
-    setTimeout(() => {
-        viewer.classList.add('active');
-    }, 10);
+    
+    // 使用requestAnimationFrame确保DOM更新后再添加active类
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            viewer.classList.add('active');
+            // 平滑过渡到不透明和可见
+            viewer.style.opacity = '1';
+            viewer.style.visibility = 'visible';
+        });
+    });
     
     // 预加载相邻图片
     preloadAdjacentImages(index);
     
-    // 禁用页面滚动
+    // 禁用页面滚动，使用更强制的方法
     document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+    document.body.style.height = '100%';
+    document.documentElement.style.overflow = 'hidden';
+    
+    // 保持页面在当前位置，不滚动到顶部
+    document.body.style.top = `-${scrollPosition}px`;
+    
+    // 只绑定一次事件监听器
+    if (!eventListenersBound) {
+        bindViewerEventListeners();
+        eventListenersBound = true;
+    }
+}
+
+// 绑定全屏查看器事件监听器（只绑定一次）
+function bindViewerEventListeners() {
+    const container = getViewerContainer();
+    if (!container) return;
+    
+    // 全局滚轮事件处理 - 确保全屏模式下阻止页面滚动
+    const globalWheelHandler = (e) => {
+        const viewer = document.getElementById('fullscreen-viewer');
+        if (viewer && viewer.classList.contains('active')) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            return false;
+        }
+    };
+    
+    // 添加到文档和窗口，确保所有滚轮事件都被拦截
+    document.addEventListener('wheel', globalWheelHandler, { passive: false, capture: true });
+    window.addEventListener('wheel', globalWheelHandler, { passive: false, capture: true });
+    
+    // 保存引用以便清理
+    window._viewerWheelHandler = globalWheelHandler;
+    
+    container.addEventListener('mousedown', (e) => {
+        if (!isZoomed) return;
+        isDragging = true;
+        dragStart.x = e.clientX - dragOffset.x;
+        dragStart.y = e.clientY - dragOffset.y;
+        container.style.cursor = 'grabbing';
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging || !isZoomed) return;
+        
+        dragOffset.x = e.clientX - dragStart.x;
+        dragOffset.y = e.clientY - dragStart.y;
+        
+        updateTransformImmediate();
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+        const container = getViewerContainer();
+        if (container) {
+            container.style.cursor = isZoomed ? 'grab' : 'default';
+        }
+    });
+
+    container.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+            touchStart.x = e.touches[0].clientX;
+            touchStart.y = e.touches[0].clientY;
+        } else if (e.touches.length === 2) {
+            // 计算双指距离
+            const distance = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+            
+            // 保存初始距离和缩放级别
+            container.dataset.pinchDistance = distance;
+            container.dataset.initialZoom = zoomLevel;
+            
+            // 计算双指中心点
+            const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+            const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+            container.dataset.pinchCenterX = centerX;
+            container.dataset.pinchCenterY = centerY;
+        }
+        e.preventDefault();
+    });
+
+    container.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 1 && isZoomed) {
+            // 单指拖动
+            const deltaX = e.touches[0].clientX - touchStart.x;
+            const deltaY = e.touches[0].clientY - touchStart.y;
+            
+            dragOffset.x += deltaX;
+            dragOffset.y += deltaY;
+            
+            touchStart.x = e.touches[0].clientX;
+            touchStart.y = e.touches[0].clientY;
+            
+            updateTransformImmediate();
+        } else if (e.touches.length === 2) {
+            // 双指缩放
+            const distance = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+            
+            const prevDistance = parseFloat(container.dataset.pinchDistance);
+            const initialZoom = parseFloat(container.dataset.initialZoom);
+            
+            // 计算新的缩放级别
+            const scale = distance / prevDistance;
+            zoomLevel = Math.min(Math.max(initialZoom * scale, 1), 3);
+            isZoomed = zoomLevel > 1;
+            
+            // 更新距离
+            container.dataset.pinchDistance = distance;
+            
+            // 计算新的中心点偏移，保持缩放中心
+            const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+            const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+            const prevCenterX = parseFloat(container.dataset.pinchCenterX);
+            const prevCenterY = parseFloat(container.dataset.pinchCenterY);
+            
+            // 调整拖动偏移以保持缩放中心
+            const scaleDiff = scale - 1;
+            dragOffset.x -= (centerX - prevCenterX) * scaleDiff;
+            dragOffset.y -= (centerY - prevCenterY) * scaleDiff;
+            
+            // 更新中心点
+            container.dataset.pinchCenterX = centerX;
+            container.dataset.pinchCenterY = centerY;
+            
+            updateTransformImmediate();
+        }
+        e.preventDefault();
+    });
+
+    container.addEventListener('touchend', (e) => {
+        if (e.changedTouches.length === 1 && !isZoomed) {
+            const deltaX = e.changedTouches[0].clientX - touchStart.x;
+            const threshold = 50;
+            
+            if (deltaX > threshold) {
+                prevImage();
+            } else if (deltaX < -threshold) {
+                nextImage();
+            }
+        }
+    });
+
+    let lastTap = 0;
+    container.addEventListener('click', (e) => {
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTap;
+        
+        if (tapLength < 300 && tapLength > 0) {
+            if (isZoomed) {
+                zoomLevel = 1;
+                isZoomed = false;
+                dragOffset = { x: 0, y: 0 };
+            } else {
+                zoomLevel = 2;
+                isZoomed = true;
+            }
+            
+            updateTransformImmediate();
+            e.preventDefault();
+        }
+        lastTap = currentTime;
+    });
+
+    // 滚轮缩放功能 - 确保阻止页面滚动
+    container.addEventListener('wheel', (e) => {
+        // 阻止默认滚动行为和事件冒泡
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        
+        // 计算缩放方向
+        const delta = e.deltaY;
+        const scaleFactor = delta < 0 ? 1.1 : 0.9;
+        
+        // 应用缩放
+        if (delta < 0) {
+            zoomLevel = Math.min(zoomLevel * scaleFactor, 3);
+        } else {
+            zoomLevel = Math.max(zoomLevel * scaleFactor, 1);
+        }
+        
+        isZoomed = zoomLevel > 1;
+        
+        // 如果缩放到1，重置位置
+        if (zoomLevel === 1) {
+            dragOffset = { x: 0, y: 0 };
+        }
+        
+        updateTransformImmediate();
+    }, { passive: false, capture: true });
 }
 
 function closeViewer() {
     const viewer = document.getElementById('fullscreen-viewer');
-    viewer.classList.remove('active');
+    
+    // 平滑淡出动画
+    viewer.style.opacity = '0';
+    viewer.style.visibility = 'hidden';
     
     setTimeout(() => {
-        viewer.classList.add('hidden');
-        resetZoom();
-    }, 300);
+        viewer.classList.remove('active');
+        
+        setTimeout(() => {
+            viewer.classList.add('hidden');
+            resetZoom();
+            
+            // 恢复页面滚动
+            const scrollPosition = document.body.dataset.scrollPosition || 0;
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+            document.body.style.height = '';
+            document.documentElement.style.overflow = '';
+            document.body.style.top = '';
+            
+            // 恢复滚动位置
+            window.scrollTo(0, parseInt(scrollPosition));
+        }, 200);
+    }, 50);
     
-    // 恢复页面滚动
-    document.body.style.overflow = '';
+    // 清理全局滚轮事件监听器
+    if (window._viewerWheelHandler) {
+        document.removeEventListener('wheel', window._viewerWheelHandler, { capture: true });
+        window.removeEventListener('wheel', window._viewerWheelHandler, { capture: true });
+        window._viewerWheelHandler = null;
+    }
 }
 
 function nextImage() {
@@ -309,12 +669,37 @@ function updateViewerImage() {
     const caption = document.getElementById('viewer-caption');
     const counter = document.getElementById('viewer-counter');
     
-    const imageData = filteredImages[currentImageIndex];
-    image.src = imageData.src;
-    image.alt = imageData.alt;
-    title.textContent = imageData.alt;
-    caption.textContent = imageData.caption;
-    counter.textContent = `${currentImageIndex + 1} / ${filteredImages.length}`;
+    // 添加淡出效果
+    image.style.opacity = '0';
+    title.style.opacity = '0';
+    caption.style.opacity = '0';
+    counter.style.opacity = '0';
+    
+    // 短暂延迟后更新内容并淡入
+    setTimeout(() => {
+        const imageData = filteredImages[currentImageIndex];
+        image.src = imageData.src;
+        image.alt = imageData.alt;
+        title.textContent = imageData.alt;
+        caption.textContent = imageData.caption;
+        counter.textContent = `${currentImageIndex + 1} / ${filteredImages.length}`;
+        
+        // 图片加载完成后淡入
+        image.onload = () => {
+            image.style.opacity = '1';
+            title.style.opacity = '1';
+            caption.style.opacity = '1';
+            counter.style.opacity = '1';
+        };
+        
+        // 如果图片已缓存，立即淡入
+        if (image.complete) {
+            image.style.opacity = '1';
+            title.style.opacity = '1';
+            caption.style.opacity = '1';
+            counter.style.opacity = '1';
+        }
+    }, 100);
     
     resetZoom();
     preloadAdjacentImages(currentImageIndex);
@@ -336,139 +721,35 @@ function preloadAdjacentImages(index) {
 
 // 缩放功能
 function zoomIn() {
-    if (zoomLevel < 3) {
-        zoomLevel = Math.min(zoomLevel + 0.5, 3);
-        applyZoom();
-    }
+    const viewer = document.getElementById('fullscreen-viewer');
+    if (!viewer || !viewer.classList.contains('active')) return;
+    
+    zoomLevel = Math.min(zoomLevel * 1.2, 3);
+    isZoomed = zoomLevel > 1;
+    updateTransformImmediate();
 }
 
 function zoomOut() {
-    if (zoomLevel > 1) {
-        zoomLevel = Math.max(zoomLevel - 0.5, 1);
-        applyZoom();
+    const viewer = document.getElementById('fullscreen-viewer');
+    if (!viewer || !viewer.classList.contains('active')) return;
+    
+    zoomLevel = Math.max(zoomLevel / 1.2, 1);
+    isZoomed = zoomLevel > 1;
+    
+    // 如果缩放到1，重置位置
+    if (zoomLevel === 1) {
+        dragOffset = { x: 0, y: 0 };
     }
+    
+    updateTransformImmediate();
 }
 
 function resetZoom() {
     zoomLevel = 1;
     isZoomed = false;
     dragOffset = { x: 0, y: 0 };
-    applyZoom();
+    updateTransformImmediate();
 }
-
-function applyZoom() {
-    const wrapper = document.getElementById('viewer-image-wrapper');
-    wrapper.style.transform = `translate(${dragOffset.x}px, ${dragOffset.y}px) scale(${zoomLevel})`;
-    isZoomed = zoomLevel > 1;
-}
-
-// 拖拽功能
-const viewerContainer = document.getElementById('viewer-container');
-
-viewerContainer.addEventListener('mousedown', (e) => {
-    if (!isZoomed) return;
-    isDragging = true;
-    dragStart = { x: e.clientX - dragOffset.x, y: e.clientY - dragOffset.y };
-    viewerContainer.style.cursor = 'grabbing';
-});
-
-document.addEventListener('mousemove', (e) => {
-    if (!isDragging || !isZoomed) return;
-    dragOffset = {
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y
-    };
-    applyZoom();
-});
-
-document.addEventListener('mouseup', () => {
-    isDragging = false;
-    viewerContainer.style.cursor = isZoomed ? 'grab' : 'default';
-});
-
-// 触摸事件
-viewerContainer.addEventListener('touchstart', (e) => {
-    if (e.touches.length === 1) {
-        touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    } else if (e.touches.length === 2) {
-        // 双指缩放
-        const distance = Math.hypot(
-            e.touches[0].clientX - e.touches[1].clientX,
-            e.touches[0].clientY - e.touches[1].clientY
-        );
-        viewerContainer.dataset.pinchDistance = distance;
-    }
-});
-
-viewerContainer.addEventListener('touchmove', (e) => {
-    if (e.touches.length === 1 && isZoomed) {
-        // 单指拖拽
-        const deltaX = e.touches[0].clientX - touchStart.x;
-        const deltaY = e.touches[0].clientY - touchStart.y;
-        dragOffset = {
-            x: dragOffset.x + deltaX,
-            y: dragOffset.y + deltaY
-        };
-        touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        applyZoom();
-    } else if (e.touches.length === 2) {
-        // 双指缩放
-        const distance = Math.hypot(
-            e.touches[0].clientX - e.touches[1].clientX,
-            e.touches[0].clientY - e.touches[1].clientY
-        );
-        const prevDistance = parseFloat(viewerContainer.dataset.pinchDistance);
-        const scale = distance / prevDistance;
-        zoomLevel = Math.min(Math.max(zoomLevel * scale, 1), 3);
-        viewerContainer.dataset.pinchDistance = distance;
-        isZoomed = zoomLevel > 1;
-        applyZoom();
-    }
-});
-
-viewerContainer.addEventListener('touchend', (e) => {
-    if (e.changedTouches.length === 1 && !isZoomed) {
-        // 单指滑动切换图片
-        const deltaX = e.changedTouches[0].clientX - touchStart.x;
-        const threshold = 50;
-        
-        if (deltaX > threshold) {
-            prevImage();
-        } else if (deltaX < -threshold) {
-            nextImage();
-        }
-    }
-});
-
-// 双击缩放
-let lastTap = 0;
-viewerContainer.addEventListener('click', (e) => {
-    const currentTime = new Date().getTime();
-    const tapLength = currentTime - lastTap;
-    
-    if (tapLength < 300 && tapLength > 0) {
-        // 双击
-        if (isZoomed) {
-            resetZoom();
-        } else {
-            zoomLevel = 2;
-            isZoomed = true;
-            applyZoom();
-        }
-        e.preventDefault();
-    }
-    lastTap = currentTime;
-});
-
-// 滚轮缩放
-viewerContainer.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    if (e.deltaY < 0) {
-        zoomIn();
-    } else {
-        zoomOut();
-    }
-}, { passive: false });
 
 // 键盘导航
 document.addEventListener('keydown', (e) => {
@@ -502,9 +783,6 @@ document.addEventListener('keydown', (e) => {
 document.getElementById('close-viewer').addEventListener('click', closeViewer);
 document.getElementById('prev-image').addEventListener('click', prevImage);
 document.getElementById('next-image').addEventListener('click', nextImage);
-document.getElementById('zoom-in').addEventListener('click', zoomIn);
-document.getElementById('zoom-out').addEventListener('click', zoomOut);
-document.getElementById('zoom-reset').addEventListener('click', resetZoom);
 
 // 导航栏滚动效果
 function initNavbarScroll() {

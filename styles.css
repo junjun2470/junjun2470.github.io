@@ -9,6 +9,7 @@
     --nav-bg: rgba(10, 10, 15, 0.7);
     --modal-bg: #0A0A0F;
     --overlay-bg: rgba(0, 0, 0, 0.5);
+    --modal-shadow: rgba(0, 0, 0, 0.19);
 }
 
 .light-mode {
@@ -22,11 +23,29 @@
     --nav-bg: rgba(255, 255, 255, 0.8);
     --modal-bg: #ffffff;
     --overlay-bg: rgba(0, 0, 0, 0.3);
+    --modal-shadow: rgba(0, 0, 0, 0.2);
 }
 
 /* 全局样式 */
 body {
     font-family: 'Inter', sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 隐藏滚动条 */
+::-webkit-scrollbar {
+    display: none;
+}
+
+html {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* 页脚样式 */
+footer {
     background-color: var(--bg-primary);
     color: var(--text-primary);
     transition: background-color 0.3s ease, color 0.3s ease;
@@ -259,19 +278,28 @@ body {
 }
 
 /* 英雄区域文字阴影 - 浅色模式下增强可读性 */
+.hero-content h1 {
+    transition: text-shadow 0.3s ease, color 0.3s ease;
+}
+
+.hero-content p {
+    transition: text-shadow 0.3s ease, color 0.3s ease;
+}
+
+.hero-content a {
+    transition: text-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
 .light-mode .hero-content h1 {
     text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 0, 0, 0.3);
-    transition: text-shadow 0.3s ease;
 }
 
 .light-mode .hero-content p {
     text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 0, 0, 0.2);
-    transition: text-shadow 0.3s ease;
 }
 
 .light-mode .hero-content a {
     text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 0, 0, 0.2);
-    transition: text-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease;
 }
 
 /* 轮播容器样式 */
@@ -319,9 +347,9 @@ body {
     width: 80%;
     max-width: 500px;
     border-radius: 8px;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    box-shadow: 0 4px 8px 0 var(--modal-shadow), 0 6px 20px 0 var(--modal-shadow);
     animation: modalScaleIn 0.3s ease-out;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 @keyframes modalScaleIn {
