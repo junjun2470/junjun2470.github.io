@@ -1,0 +1,432 @@
+/* 全局样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-primary, #0A0A0F);
+    color: var(--text-primary, #fff);
+    line-height: 1.6;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 分类头部样式 */
+#category-header {
+    position: relative;
+    overflow: hidden;
+    height: 100vh;
+    min-height: 100vh;
+    /* 移动端优化：使用dvh（动态视窗高度）来避免地址栏问题 */
+    height: 100dvh;
+    min-height: 100dvh;
+}
+
+/* 分类标题和描述 - 固定白色文本，不受深浅模式影响 */
+#category-title {
+    color: #ffffff !important;
+    font-size: 2.5rem !important;
+}
+
+#category-description {
+    color: #ffffff !important;
+}
+
+/* 浅色模式下的分类头部遮罩调整 */
+.light-mode #category-header {
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.25) 100%);
+    transition: background 0.3s ease;
+}
+
+/* 分类标题和描述文字阴影 - 浅色模式下增强可读性 */
+.light-mode #category-title {
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 0, 0, 0.4);
+    transition: text-shadow 0.3s ease;
+}
+
+.light-mode #category-description {
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5), 0 0 10px rgba(0, 0, 0, 0.3);
+    transition: text-shadow 0.3s ease;
+}
+
+#header-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: var(--bg-secondary, #1A1A24); /* 备用背景色 */
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+    #category-header {
+        /* 移动设备上使用dvh来处理动态地址栏 */
+        height: 100dvh;
+        min-height: 100dvh;
+    }
+    
+    /* 确保移动端标题和描述不会溢出 */
+    #category-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    #category-header p {
+        font-size: 1rem;
+    }
+}
+
+/* 平板设备 */
+@media (min-width: 769px) and (max-width: 1024px) {
+    #category-header {
+        height: 100vh;
+        min-height: 100vh;
+    }
+}
+
+/* 桌面设备 */
+@media (min-width: 1025px) {
+    #category-header {
+        height: 100vh;
+        min-height: 100vh;
+    }
+}
+
+/* 作品网格样式 */
+#portfolio-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+/* 移动端：2列 */
+@media (max-width: 768px) {
+    #portfolio-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+}
+
+/* 平板：3列 */
+@media (min-width: 769px) and (max-width: 1024px) {
+    #portfolio-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+}
+
+/* 桌面：4列 */
+@media (min-width: 1025px) {
+    #portfolio-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+    }
+}
+
+/* 作品卡片样式 */
+.portfolio-item {
+    position: relative;
+    aspect-ratio: 3 / 2;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    background-color: var(--bg-secondary, #1A1A24);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    /* GSAP动画初始状态 */
+    opacity: 0;
+    transform: translateY(50px);
+}
+
+.portfolio-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -1px rgba(0, 0, 0, 0.3);
+}
+
+.portfolio-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+    will-change: transform;
+}
+
+.portfolio-item:hover img {
+    transform: scale(1.1);
+}
+
+.portfolio-item .overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 1rem;
+}
+
+.portfolio-item:hover .overlay {
+    opacity: 1;
+}
+
+.portfolio-item .title {
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    transform: translateY(10px);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.portfolio-item .caption {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.75rem;
+    transform: translateY(10px);
+    opacity: 0;
+    transition: all 0.3s ease 0.05s;
+}
+
+.portfolio-item:hover .title,
+.portfolio-item:hover .caption {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* 搜索框样式 */
+#search-input {
+    transition: all 0.3s ease;
+}
+
+#search-input:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+#clear-search {
+    transition: all 0.2s ease;
+}
+
+#clear-search:hover {
+    transform: scale(1.1);
+}
+
+#search-results {
+    transition: opacity 0.3s ease;
+}
+
+/* 全屏查看器样式 */
+#fullscreen-viewer {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#fullscreen-viewer.active {
+    opacity: 1;
+}
+
+#viewer-container {
+    touch-action: none;
+}
+
+#viewer-image-wrapper {
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+#viewer-image {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
+    -webkit-user-select: none;
+}
+
+#viewer-info {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+#fullscreen-viewer.active #viewer-info {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 缩放控制按钮 */
+#zoom-in,
+#zoom-out,
+#zoom-reset {
+    transition: all 0.2s ease;
+}
+
+#zoom-in:hover,
+#zoom-out:hover,
+#zoom-reset:hover {
+    transform: scale(1.1);
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+#zoom-in:active,
+#zoom-out:active,
+#zoom-reset:active {
+    transform: scale(0.95);
+}
+
+/* 导航按钮 */
+#prev-image,
+#next-image,
+#close-viewer {
+    transition: all 0.2s ease;
+}
+
+#prev-image:hover,
+#next-image:hover,
+#close-viewer:hover {
+    transform: scale(1.1);
+    color: white;
+}
+
+#prev-image:active,
+#next-image:active,
+#close-viewer:active {
+    transform: scale(0.95);
+}
+
+/* 无结果提示 */
+#no-results {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#reset-search {
+    transition: all 0.2s ease;
+}
+
+#reset-search:hover {
+    text-decoration: underline;
+}
+
+/* 加载动画 */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.loading::after {
+    content: '';
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* GSAP动画类 */
+.gsap-fade-in {
+    opacity: 0;
+}
+
+/* 响应式调整 */
+@media (max-width: 480px) {
+    .portfolio-item .title {
+        font-size: 0.75rem;
+    }
+    
+    .portfolio-item .caption {
+        font-size: 0.625rem;
+    }
+    
+    #viewer-info {
+        padding: 1rem;
+    }
+    
+    #viewer-title {
+        font-size: 1rem;
+    }
+    
+    #viewer-caption {
+        font-size: 0.875rem;
+    }
+}
+
+@media (max-width: 768px) {
+    #category-header {
+        height: 16rem;
+    }
+    
+    #category-title {
+        font-size: 2.5rem !important;
+    }
+    
+    #category-description {
+        font-size: 1rem;
+    }
+}
+
+/* 高DPI设备优化 */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .portfolio-item img {
+        image-rendering: -webkit-optimize-contrast;
+    }
+}
+
+/* 折叠屏设备适配 */
+@media (max-width: 768px) and (orientation: landscape) {
+    #category-header {
+        height: 12rem;
+    }
+}
+
+/* 性能优化 */
+.portfolio-item img {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary, #0A0A0F);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--text-muted, #333);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary, #555);
+}
+
+
+
+
+
