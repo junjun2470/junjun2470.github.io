@@ -511,35 +511,42 @@ function bindViewerEventListeners() {
             
             const prevDistance = parseFloat(container.dataset.pinchDistance);
             const initialZoom = parseFloat(container.dataset.initialZoom);
+            const prevZoom = zoomLevel;
             
-            // 计算当前双指中心点
+            // 计算当前双指中心点（相对于屏幕）
             const currentCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
             const currentCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+            
+            // 获取容器和图片包装器元素
+            const containerRect = container.getBoundingClientRect();
+            const wrapper = getImageWrapper();
+            const wrapperRect = wrapper.getBoundingClientRect();
+            
+            // 计算双指中心点相对于容器的坐标
+            const pinchX = currentCenterX - containerRect.left;
+            const pinchY = currentCenterY - containerRect.top;
+            
+            // 计算中心点相对于图片内容的坐标（考虑当前偏移和缩放）
+            const contentX = (pinchX - dragOffset.x - (containerRect.width - wrapperRect.width) / 2) / prevZoom;
+            const contentY = (pinchY - dragOffset.y - (containerRect.height - wrapperRect.height) / 2) / prevZoom;
             
             // 计算缩放比例
             const scale = distance / prevDistance;
             const newZoomLevel = Math.min(Math.max(initialZoom * scale, 1), 2); // 最大200%
             
-            // 计算中心点偏移，保持缩放中心
-            const prevCenterX = parseFloat(container.dataset.pinchCenterX);
-            const prevCenterY = parseFloat(container.dataset.pinchCenterY);
-            
-            // 获取容器中心点
-            const containerRect = container.getBoundingClientRect();
-            const containerCenterX = containerRect.left + containerRect.width / 2;
-            const containerCenterY = containerRect.top + containerRect.height / 2;
-            
-            // 计算相对于容器中心的偏移
-            const offsetX = containerCenterX - prevCenterX;
-            const offsetY = containerCenterY - prevCenterY;
-            
             // 应用新的缩放级别
             zoomLevel = newZoomLevel;
             isZoomed = zoomLevel > 1;
             
-            // 调整拖动偏移以保持缩放中心
-            dragOffset.x = offsetX * (1 - newZoomLevel) + dragOffset.x * scale;
-            dragOffset.y = offsetY * (1 - newZoomLevel) + dragOffset.y * scale;
+            // 计算新的包装器尺寸
+            const newWrapperRect = {
+                width: wrapperRect.width * (newZoomLevel / prevZoom),
+                height: wrapperRect.height * (newZoomLevel / prevZoom)
+            };
+            
+            // 计算新的偏移量，使双指中心点对应的内容保持不变
+            dragOffset.x = pinchX - (containerRect.width - newWrapperRect.width) / 2 - contentX * newZoomLevel;
+            dragOffset.y = pinchY - (containerRect.height - newWrapperRect.height) / 2 - contentY * newZoomLevel;
             
             // 更新数据
             container.dataset.pinchDistance = distance;
@@ -583,12 +590,37 @@ function bindViewerEventListeners() {
             // 设置超时以处理双击
             tapTimeout = setTimeout(() => {
                 if (isZoomed) {
+                    // 还原到100%
                     zoomLevel = 1;
                     isZoomed = false;
                     dragOffset = { x: 0, y: 0 };
                 } else {
-                    zoomLevel = 2; // 双击放大到200%
+                    // 双击放大到200%，以点击位置为中心
+                    const containerRect = container.getBoundingClientRect();
+                    const wrapper = getImageWrapper();
+                    const wrapperRect = wrapper.getBoundingClientRect();
+                    
+                    // 计算点击位置相对于容器的坐标
+                    const clickX = e.clientX - containerRect.left;
+                    const clickY = e.clientY - containerRect.top;
+                    
+                    // 计算点击位置相对于图片内容的坐标（当前缩放为1）
+                    const contentX = (clickX - (containerRect.width - wrapperRect.width) / 2);
+                    const contentY = (clickY - (containerRect.height - wrapperRect.height) / 2);
+                    
+                    // 放大到200%
+                    zoomLevel = 2;
                     isZoomed = true;
+                    
+                    // 计算新的包装器尺寸
+                    const newWrapperRect = {
+                        width: wrapperRect.width * 2,
+                        height: wrapperRect.height * 2
+                    };
+                    
+                    // 计算新的偏移量，使点击位置对应的内容保持不变
+                    dragOffset.x = clickX - (containerRect.width - newWrapperRect.width) / 2 - contentX * 2;
+                    dragOffset.y = clickY - (containerRect.height - newWrapperRect.height) / 2 - contentY * 2;
                 }
                 
                 updateTransformImmediate();
@@ -609,12 +641,20 @@ function bindViewerEventListeners() {
         const delta = e.deltaY;
         const step = 0.2;
         
-        // 计算鼠标位置相对于图片容器的坐标
+        // 获取容器和图片包装器元素
         const containerRect = container.getBoundingClientRect();
+        const wrapper = getImageWrapper();
+        const wrapperRect = wrapper.getBoundingClientRect();
+        
+        // 计算鼠标位置相对于容器的坐标
         const mouseX = e.clientX - containerRect.left;
         const mouseY = e.clientY - containerRect.top;
         
-        // 保存当前缩放级别和偏移量
+        // 计算鼠标位置相对于图片内容的坐标（考虑当前偏移和缩放）
+        const contentX = (mouseX - dragOffset.x - (containerRect.width - wrapperRect.width) / 2) / zoomLevel;
+        const contentY = (mouseY - dragOffset.y - (containerRect.height - wrapperRect.height) / 2) / zoomLevel;
+        
+        // 保存当前缩放级别
         const prevZoom = zoomLevel;
         
         // 计算新的缩放级别
@@ -627,24 +667,19 @@ function bindViewerEventListeners() {
             newZoom = Math.max(zoomLevel - step, 1); // 最小100%
         }
         
-        // 计算缩放比例
-        const scaleFactor = newZoom / prevZoom;
-        
-        // 计算以鼠标为中心的偏移量调整
-        const centerX = containerRect.width / 2;
-        const centerY = containerRect.height / 2;
-        
-        // 计算鼠标相对于容器中心的偏移
-        const offsetFromCenterX = mouseX - centerX;
-        const offsetFromCenterY = mouseY - centerY;
-        
         // 应用新的缩放级别
         zoomLevel = newZoom;
         isZoomed = zoomLevel > 1;
         
-        // 调整拖动偏移以保持鼠标位置作为缩放中心
-        dragOffset.x += offsetFromCenterX * (1 - scaleFactor);
-        dragOffset.y += offsetFromCenterY * (1 - scaleFactor);
+        // 计算新的偏移量，确保鼠标位置对应的图片内容保持不变
+        const newWrapperRect = {
+            width: wrapperRect.width * (newZoom / prevZoom),
+            height: wrapperRect.height * (newZoom / prevZoom)
+        };
+        
+        // 计算新的偏移量，使鼠标位置对应的内容保持不变
+        dragOffset.x = mouseX - (containerRect.width - newWrapperRect.width) / 2 - contentX * newZoom;
+        dragOffset.y = mouseY - (containerRect.height - newWrapperRect.height) / 2 - contentY * newZoom;
         
         // 如果缩放到1，重置位置
         if (zoomLevel === 1) {
