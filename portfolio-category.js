@@ -350,13 +350,13 @@ function openViewer(index) {
     const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
     document.body.dataset.scrollPosition = scrollPosition;
     
+    // 重置所有状态，确保初始状态正确
     currentImageIndex = index;
-    zoomLevel = 1;
-    isZoomed = false;
-    dragOffset = { x: 0, y: 0 };
+    zoomLevel = 1;          // 默认缩放级别
+    isZoomed = false;       // 初始未缩放状态
+    dragOffset = { x: 0, y: 0 }; // 初始无偏移
     touchStart = { x: 0, y: 0 };
     isDragging = false;
-    lastFrameTime = 0;
     
     // 重置缓存的DOM引用
     imageWrapper = null;
@@ -421,23 +421,8 @@ function bindViewerEventListeners() {
     const container = getViewerContainer();
     if (!container) return;
     
-    // 全局滚轮事件处理 - 确保全屏模式下阻止页面滚动
-    const globalWheelHandler = (e) => {
-        const viewer = document.getElementById('fullscreen-viewer');
-        if (viewer && viewer.classList.contains('active')) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            return false;
-        }
-    };
-    
-    // 添加到文档和窗口，确保所有滚轮事件都被拦截
-    document.addEventListener('wheel', globalWheelHandler, { passive: false, capture: true });
-    window.addEventListener('wheel', globalWheelHandler, { passive: false, capture: true });
-    
-    // 保存引用以便清理
-    window._viewerWheelHandler = globalWheelHandler;
+    // 移除全局滚轮事件处理，改为由容器自己处理滚轮事件
+    // 这样可以避免事件被拦截，确保容器的滚轮缩放功能正常工作
     
     container.addEventListener('mousedown', (e) => {
         if (!isZoomed) return;
@@ -466,15 +451,13 @@ function bindViewerEventListeners() {
     });
 
     container.addEventListener('touchstart', (e) => {
-        // 如果双指操作，不处理单指逻辑
+        // 单指触摸 - 记录起始位置
         if (e.touches.length === 1) {
-            // 保存触摸起始位置，用于判断是点击还是滑动
             touchStart.x = e.touches[0].clientX;
             touchStart.y = e.touches[0].clientY;
-            touchStart.time = Date.now();
-            touchStart.count = 1;
-        } else if (e.touches.length === 2) {
-            touchStart.count = 2;
+        }
+        // 双指触摸 - 开始缩放
+        else if (e.touches.length === 2) {
             // 计算双指距离
             const distance = Math.hypot(
                 e.touches[0].clientX - e.touches[1].clientX,
@@ -491,92 +474,86 @@ function bindViewerEventListeners() {
             container.dataset.pinchCenterX = centerX;
             container.dataset.pinchCenterY = centerY;
             
-            // 重置单指触摸位置，避免误触发拖动
-            touchStart.x = centerX;
-            touchStart.y = centerY;
+            // 阻止默认行为
+            e.preventDefault();
         }
-        e.preventDefault();
     }, { passive: false });
 
     container.addEventListener('touchmove', (e) => {
-        // 如果是单指操作且已放大，允许拖动
+        // 单指拖动 - 只有在缩放状态下才能拖动
         if (e.touches.length === 1 && isZoomed) {
+            // 单指拖动
             const deltaX = e.touches[0].clientX - touchStart.x;
             const deltaY = e.touches[0].clientY - touchStart.y;
             
-            // 更新偏移量
             dragOffset.x += deltaX;
             dragOffset.y += deltaY;
             
-            // 更新触摸起始位置
             touchStart.x = e.touches[0].clientX;
             touchStart.y = e.touches[0].clientY;
             
             updateTransformImmediate();
-        } else if (e.touches.length === 2) {
+            e.preventDefault();
+        }
+        // 双指缩放 - 始终允许缩放
+        else if (e.touches.length === 2) {
             // 双指缩放 - 优化版本，保持中心点
             const distance = Math.hypot(
                 e.touches[0].clientX - e.touches[1].clientX,
                 e.touches[0].clientY - e.touches[1].clientY
             );
             
+            // 获取初始距离和缩放级别
             const prevDistance = parseFloat(container.dataset.pinchDistance);
             const initialZoom = parseFloat(container.dataset.initialZoom);
             const prevZoom = zoomLevel;
             
-            // 如果是第一次双指触摸，初始化数据
-            if (!prevDistance || isNaN(prevDistance)) {
+            // 检查是否有有效的初始距离（避免NaN错误）
+            if (!isNaN(prevDistance) && prevDistance > 0) {
+                // 计算当前双指中心点（相对于屏幕）
+                const currentCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                const currentCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                
+                // 获取容器和图片包装器元素
+                const containerRect = container.getBoundingClientRect();
+                const wrapper = getImageWrapper();
+                const wrapperRect = wrapper.getBoundingClientRect();
+                
+                // 计算双指中心点相对于容器的坐标
+                const pinchX = currentCenterX - containerRect.left;
+                const pinchY = currentCenterY - containerRect.top;
+                
+                // 计算中心点相对于图片内容的坐标（考虑当前偏移和缩放）
+                const contentX = (pinchX - dragOffset.x - (containerRect.width - wrapperRect.width) / 2) / prevZoom;
+                const contentY = (pinchY - dragOffset.y - (containerRect.height - wrapperRect.height) / 2) / prevZoom;
+                
+                // 计算缩放比例
+                const scale = distance / prevDistance;
+                const newZoomLevel = Math.min(Math.max(initialZoom * scale, 1), 2); // 最大200%
+                
+                // 应用新的缩放级别
+                zoomLevel = newZoomLevel;
+                isZoomed = zoomLevel > 1;
+                
+                // 计算新的包装器尺寸
+                const newWrapperRect = {
+                    width: wrapperRect.width * (newZoomLevel / prevZoom),
+                    height: wrapperRect.height * (newZoomLevel / prevZoom)
+                };
+                
+                // 计算新的偏移量，使双指中心点对应的内容保持不变
+                dragOffset.x = pinchX - (containerRect.width - newWrapperRect.width) / 2 - contentX * newZoomLevel;
+                dragOffset.y = pinchY - (containerRect.height - newWrapperRect.height) / 2 - contentY * newZoomLevel;
+                
+                // 更新数据
                 container.dataset.pinchDistance = distance;
-                container.dataset.initialZoom = zoomLevel;
-                container.dataset.pinchCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-                container.dataset.pinchCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                container.dataset.pinchCenterX = currentCenterX;
+                container.dataset.pinchCenterY = currentCenterY;
+                
+                updateTransformImmediate();
                 e.preventDefault();
-                return;
             }
-            
-            // 计算当前双指中心点（相对于屏幕）
-            const currentCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-            const currentCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-            
-            // 获取容器和图片包装器元素
-            const containerRect = container.getBoundingClientRect();
-            const wrapper = getImageWrapper();
-            const wrapperRect = wrapper.getBoundingClientRect();
-            
-            // 计算双指中心点相对于容器的坐标
-            const pinchX = currentCenterX - containerRect.left;
-            const pinchY = currentCenterY - containerRect.top;
-            
-            // 计算中心点相对于图片内容的坐标（考虑当前偏移和缩放）
-            const contentX = (pinchX - dragOffset.x - (containerRect.width - wrapperRect.width) / 2) / prevZoom;
-            const contentY = (pinchY - dragOffset.y - (containerRect.height - wrapperRect.height) / 2) / prevZoom;
-            
-            // 计算缩放比例
-            const scale = distance / prevDistance;
-            const newZoomLevel = Math.min(Math.max(initialZoom * scale, 1), 2); // 最大200%
-            
-            // 应用新的缩放级别
-            zoomLevel = newZoomLevel;
-            isZoomed = zoomLevel > 1;
-            
-            // 计算新的包装器尺寸
-            const newWrapperRect = {
-                width: wrapperRect.width * (newZoomLevel / prevZoom),
-                height: wrapperRect.height * (newZoomLevel / prevZoom)
-            };
-            
-            // 计算新的偏移量，使双指中心点对应的内容保持不变
-            dragOffset.x = pinchX - (containerRect.width - newWrapperRect.width) / 2 - contentX * newZoomLevel;
-            dragOffset.y = pinchY - (containerRect.height - newWrapperRect.height) / 2 - contentY * newZoomLevel;
-            
-            // 更新数据
-            container.dataset.pinchDistance = distance;
-            container.dataset.pinchCenterX = currentCenterX;
-            container.dataset.pinchCenterY = currentCenterY;
-            
-            updateTransformImmediate();
         }
-        e.preventDefault();
     }, { passive: false });
 
     container.addEventListener('touchend', (e) => {
@@ -593,11 +570,27 @@ function bindViewerEventListeners() {
         e.preventDefault();
     }, { passive: false });
 
+    // 双击事件处理 - 同时支持触摸和鼠标事件
     let lastTap = 0;
     let tapTimeout = null;
     
-    // 防抖动处理的双击事件
-    container.addEventListener('click', (e) => {
+    // 统一的双击处理函数
+    const handleDoubleTap = (e) => {
+        // 触摸事件：只处理单指触摸，避免干扰双指缩放
+        if (e.type === 'touchstart' && e.touches.length > 1) {
+            return; // 跳过双指触摸，不处理双击
+        }
+        
+        // 获取点击/触摸位置
+        let clientX, clientY;
+        if (e.type === 'touchstart') {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        
         const currentTime = new Date().getTime();
         const tapLength = currentTime - lastTap;
         
@@ -609,55 +602,58 @@ function bindViewerEventListeners() {
         
         // 如果是快速双击（300毫秒内）
         if (tapLength < 300 && tapLength > 0) {
-            // 设置超时以处理双击
-            tapTimeout = setTimeout(() => {
-                if (isZoomed) {
-                    // 还原到100%
-                    zoomLevel = 1;
-                    isZoomed = false;
-                    dragOffset = { x: 0, y: 0 };
-                } else {
-                    // 双击放大到200%，以点击位置为中心
-                    const containerRect = container.getBoundingClientRect();
-                    const wrapper = getImageWrapper();
-                    const wrapperRect = wrapper.getBoundingClientRect();
-                    
-                    // 计算点击位置相对于容器的坐标
-                    const clickX = e.clientX - containerRect.left;
-                    const clickY = e.clientY - containerRect.top;
-                    
-                    // 计算点击位置相对于图片内容的坐标（当前缩放为1）
-                    const contentX = (clickX - (containerRect.width - wrapperRect.width) / 2);
-                    const contentY = (clickY - (containerRect.height - wrapperRect.height) / 2);
-                    
-                    // 放大到200%
-                    zoomLevel = 2;
-                    isZoomed = true;
-                    
-                    // 计算新的包装器尺寸
-                    const newWrapperRect = {
-                        width: wrapperRect.width * 2,
-                        height: wrapperRect.height * 2
-                    };
-                    
-                    // 计算新的偏移量，使点击位置对应的内容保持不变
-                    dragOffset.x = clickX - (containerRect.width - newWrapperRect.width) / 2 - contentX * 2;
-                    dragOffset.y = clickY - (containerRect.height - newWrapperRect.height) / 2 - contentY * 2;
-                }
+            // 立即处理双击，无延迟
+            if (isZoomed) {
+                // 双击返回：还原到100%
+                zoomLevel = 1;
+                isZoomed = false;
+                dragOffset = { x: 0, y: 0 };
+            } else {
+                // 双击放大：以点击位置为中心放大到2.0倍
+                const containerRect = container.getBoundingClientRect();
+                const wrapper = getImageWrapper();
+                const wrapperRect = wrapper.getBoundingClientRect();
                 
-                updateTransformImmediate();
-            }, 50); // 50毫秒延迟确保是双击而非两次单击
+                // 计算点击位置相对于容器的坐标
+                const clickX = clientX - containerRect.left;
+                const clickY = clientY - containerRect.top;
+                
+                // 计算点击位置相对于图片内容的坐标（当前缩放为1）
+                const contentX = (clickX - (containerRect.width - wrapperRect.width) / 2);
+                const contentY = (clickY - (containerRect.height - wrapperRect.height) / 2);
+                
+                // 放大到200%
+                zoomLevel = 2;
+                isZoomed = true;
+                
+                // 计算新的包装器尺寸
+                const newWrapperRect = {
+                    width: wrapperRect.width * 2,
+                    height: wrapperRect.height * 2
+                };
+                
+                // 计算新的偏移量，使点击位置对应的内容保持不变
+                dragOffset.x = clickX - (containerRect.width - newWrapperRect.width) / 2 - contentX * 2;
+                dragOffset.y = clickY - (containerRect.height - newWrapperRect.height) / 2 - contentY * 2;
+            }
+            
+            updateTransformImmediate();
+            e.preventDefault();
         }
         
         lastTap = currentTime;
-    });
+    };
+    
+    // 绑定鼠标点击事件
+    container.addEventListener('click', handleDoubleTap);
+    
+    // 绑定触摸事件
+    container.addEventListener('touchstart', handleDoubleTap, { passive: false });
 
     // 滚轮缩放功能 - 确保阻止页面滚动
     container.addEventListener('wheel', (e) => {
-        // 阻止默认滚动行为和事件冒泡
+        // 阻止默认滚动行为
         e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
         
         // 计算缩放方向，步进为20%
         const delta = e.deltaY;
@@ -709,7 +705,7 @@ function bindViewerEventListeners() {
         }
         
         updateTransformImmediate();
-    }, { passive: false, capture: true });
+    }, { passive: false });
 }
 
 function closeViewer() {
@@ -740,12 +736,7 @@ function closeViewer() {
         }, 200);
     }, 50);
     
-    // 清理全局滚轮事件监听器
-    if (window._viewerWheelHandler) {
-        document.removeEventListener('wheel', window._viewerWheelHandler, { capture: true });
-        window.removeEventListener('wheel', window._viewerWheelHandler, { capture: true });
-        window._viewerWheelHandler = null;
-    }
+    // 不再需要清理全局滚轮事件监听器，因为我们已经不再使用它
 }
 
 function nextImage() {
