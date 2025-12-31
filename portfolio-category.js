@@ -14,12 +14,8 @@ let isZoomed = false;
 let imageWrapper = null;
 let viewerContainer = null;
 
-// 事件监听器引用存储
-let viewerEventListeners = {
-    mousemove: null,
-    mouseup: null,
-    globalWheel: null
-};
+// 事件监听器绑定标志，防止重复绑定
+let eventListenersBound = false;
 
 // 高性能渲染管道
 let rafId = null;
@@ -413,17 +409,17 @@ function openViewer(index) {
     // 保持页面在当前位置，不滚动到顶部
     document.body.style.top = `-${scrollPosition}px`;
     
-    // 绑定事件监听器
-    bindViewerEventListeners();
+    // 只绑定一次事件监听器
+    if (!eventListenersBound) {
+        bindViewerEventListeners();
+        eventListenersBound = true;
+    }
 }
 
 // 绑定全屏查看器事件监听器（只绑定一次）
 function bindViewerEventListeners() {
     const container = getViewerContainer();
     if (!container) return;
-    
-    // 首先清理已存在的事件监听器
-    cleanupViewerEventListeners();
     
     // 全局滚轮事件处理 - 确保全屏模式下阻止页面滚动
     const globalWheelHandler = (e) => {
@@ -441,9 +437,8 @@ function bindViewerEventListeners() {
     window.addEventListener('wheel', globalWheelHandler, { passive: false, capture: true });
     
     // 保存引用以便清理
-    viewerEventListeners.globalWheel = globalWheelHandler;
+    window._viewerWheelHandler = globalWheelHandler;
     
-    // 鼠标按下事件
     container.addEventListener('mousedown', (e) => {
         if (!isZoomed) return;
         isDragging = true;
@@ -453,30 +448,23 @@ function bindViewerEventListeners() {
         e.preventDefault();
     });
 
-    // 鼠标移动事件
-    const mousemoveHandler = (e) => {
+    document.addEventListener('mousemove', (e) => {
         if (!isDragging || !isZoomed) return;
         
         dragOffset.x = e.clientX - dragStart.x;
         dragOffset.y = e.clientY - dragStart.y;
         
         updateTransformImmediate();
-    };
-    document.addEventListener('mousemove', mousemoveHandler);
-    viewerEventListeners.mousemove = mousemoveHandler;
+    });
 
-    // 鼠标释放事件
-    const mouseupHandler = () => {
+    document.addEventListener('mouseup', () => {
         isDragging = false;
         const container = getViewerContainer();
         if (container) {
             container.style.cursor = isZoomed ? 'grab' : 'default';
         }
-    };
-    document.addEventListener('mouseup', mouseupHandler);
-    viewerEventListeners.mouseup = mouseupHandler;
+    });
 
-    // 触摸开始事件
     container.addEventListener('touchstart', (e) => {
         if (e.touches.length === 1) {
             touchStart.x = e.touches[0].clientX;
@@ -499,9 +487,8 @@ function bindViewerEventListeners() {
             container.dataset.pinchCenterY = centerY;
         }
         e.preventDefault();
-    });
+    }, { passive: false });
 
-    // 触摸移动事件
     container.addEventListener('touchmove', (e) => {
         if (e.touches.length === 1 && isZoomed) {
             // 单指拖动
@@ -569,9 +556,8 @@ function bindViewerEventListeners() {
             updateTransformImmediate();
         }
         e.preventDefault();
-    });
+    }, { passive: false });
 
-    // 触摸结束事件
     container.addEventListener('touchend', (e) => {
         if (e.changedTouches.length === 1 && !isZoomed) {
             const deltaX = e.changedTouches[0].clientX - touchStart.x;
@@ -580,10 +566,11 @@ function bindViewerEventListeners() {
             if (deltaX > threshold) {
                 prevImage();
             } else if (deltaX < -threshold) {
-            nextImage();
+                nextImage();
+            }
         }
-        }
-    });
+        e.preventDefault();
+    }, { passive: false });
 
     let lastTap = 0;
     let tapTimeout = null;
@@ -704,35 +691,6 @@ function bindViewerEventListeners() {
     }, { passive: false, capture: true });
 }
 
-// 清理全屏查看器事件监听器
-function cleanupViewerEventListeners() {
-    // 清理全局滚轮事件
-    if (viewerEventListeners.globalWheel) {
-        document.removeEventListener('wheel', viewerEventListeners.globalWheel, { capture: true });
-        window.removeEventListener('wheel', viewerEventListeners.globalWheel, { capture: true });
-        viewerEventListeners.globalWheel = null;
-    }
-    
-    // 清理鼠标移动事件
-    if (viewerEventListeners.mousemove) {
-        document.removeEventListener('mousemove', viewerEventListeners.mousemove);
-        viewerEventListeners.mousemove = null;
-    }
-    
-    // 清理鼠标释放事件
-    if (viewerEventListeners.mouseup) {
-        document.removeEventListener('mouseup', viewerEventListeners.mouseup);
-        viewerEventListeners.mouseup = null;
-    }
-    
-    // 清理旧的全局滚轮处理程序引用
-    if (window._viewerWheelHandler) {
-        document.removeEventListener('wheel', window._viewerWheelHandler, { capture: true });
-        window.removeEventListener('wheel', window._viewerWheelHandler, { capture: true });
-        window._viewerWheelHandler = null;
-    }
-}
-
 function closeViewer() {
     const viewer = document.getElementById('fullscreen-viewer');
     
@@ -761,8 +719,12 @@ function closeViewer() {
         }, 200);
     }, 50);
     
-    // 清理所有事件监听器
-    cleanupViewerEventListeners();
+    // 清理全局滚轮事件监听器
+    if (window._viewerWheelHandler) {
+        document.removeEventListener('wheel', window._viewerWheelHandler, { capture: true });
+        window.removeEventListener('wheel', window._viewerWheelHandler, { capture: true });
+        window._viewerWheelHandler = null;
+    }
 }
 
 function nextImage() {
