@@ -18,9 +18,8 @@ let viewerContainer = null;
 let eventListenersBound = false;
 
 // 高性能渲染管道
-let isRendering = false;
-let renderQueue = [];
 let rafId = null;
+let lastTransform = null;
 
 function getImageWrapper() {
     if (!imageWrapper) {
@@ -43,23 +42,7 @@ function getViewerContainer() {
     return viewerContainer;
 }
 
-// 高效批量渲染
-function scheduleRender() {
-    if (isRendering) return;
-    
-    isRendering = true;
-    rafId = requestAnimationFrame(() => {
-        // 批量处理所有待渲染的变换
-        while (renderQueue.length > 0) {
-            const transform = renderQueue.shift();
-            applyTransformImmediate(transform);
-        }
-        isRendering = false;
-        rafId = null;
-    });
-}
-
-// 即时变换更新，加入渲染队列
+// 优化的变换更新，使用requestAnimationFrame直接渲染，避免队列开销
 function updateTransformImmediate(transform) {
     if (!transform) {
         transform = {
@@ -69,22 +52,27 @@ function updateTransformImmediate(transform) {
         };
     }
     
-    // 加入渲染队列
-    renderQueue.push(transform);
-    
-    // 如果没有正在渲染，立即开始
-    if (!isRendering && !rafId) {
-        scheduleRender();
+    // 避免不必要的渲染
+    if (lastTransform && 
+        lastTransform.x === transform.x && 
+        lastTransform.y === transform.y && 
+        lastTransform.scale === transform.scale) {
+        return;
     }
-}
-
-// 应用变换，使用合成层优化
-function applyTransformImmediate(transform) {
-    const wrapper = getImageWrapper();
-    if (wrapper) {
-        // 使用transform3d和scale3d确保硬件加速
-        wrapper.style.transform = `translate3d(${transform.x}px, ${transform.y}px, 0) scale3d(${transform.scale}, ${transform.scale}, 1)`;
-        isZoomed = transform.scale > 1;
+    
+    lastTransform = transform;
+    
+    // 直接使用requestAnimationFrame渲染，避免队列开销
+    if (!rafId) {
+        rafId = requestAnimationFrame(() => {
+            const wrapper = getImageWrapper();
+            if (wrapper) {
+                // 使用transform3d和scale3d确保硬件加速
+                wrapper.style.transform = `translate3d(${transform.x}px, ${transform.y}px, 0) scale3d(${transform.scale}, ${transform.scale}, 1)`;
+                isZoomed = transform.scale > 1;
+            }
+            rafId = null;
+        });
     }
 }
 
@@ -374,6 +362,8 @@ function openViewer(index) {
     imageWrapper = null;
     viewerContainer = null;
     
+
+    
     const viewer = document.getElementById('fullscreen-viewer');
     const image = document.getElementById('viewer-image');
     const title = document.getElementById('viewer-title');
@@ -528,7 +518,7 @@ function bindViewerEventListeners() {
             
             // 计算缩放比例
             const scale = distance / prevDistance;
-            const newZoomLevel = Math.min(Math.max(initialZoom * scale, 1), 3);
+            const newZoomLevel = Math.min(Math.max(initialZoom * scale, 1), 2); // 最大200%
             
             // 计算中心点偏移，保持缩放中心
             const prevCenterX = parseFloat(container.dataset.pinchCenterX);
@@ -569,8 +559,8 @@ function bindViewerEventListeners() {
             if (deltaX > threshold) {
                 prevImage();
             } else if (deltaX < -threshold) {
-                nextImage();
-            }
+            nextImage();
+        }
         }
     });
 
@@ -597,7 +587,7 @@ function bindViewerEventListeners() {
                     isZoomed = false;
                     dragOffset = { x: 0, y: 0 };
                 } else {
-                    zoomLevel = 2;
+                    zoomLevel = 2; // 双击放大到200%
                     isZoomed = true;
                 }
                 
@@ -615,18 +605,46 @@ function bindViewerEventListeners() {
         e.stopPropagation();
         e.stopImmediatePropagation();
         
-        // 计算缩放方向
+        // 计算缩放方向，步进为20%
         const delta = e.deltaY;
-        const scaleFactor = delta < 0 ? 1.1 : 0.9;
+        const step = 0.2;
         
-        // 应用缩放
+        // 计算鼠标位置相对于图片容器的坐标
+        const containerRect = container.getBoundingClientRect();
+        const mouseX = e.clientX - containerRect.left;
+        const mouseY = e.clientY - containerRect.top;
+        
+        // 保存当前缩放级别和偏移量
+        const prevZoom = zoomLevel;
+        
+        // 计算新的缩放级别
+        let newZoom = zoomLevel;
         if (delta < 0) {
-            zoomLevel = Math.min(zoomLevel * scaleFactor, 3);
+            // 放大
+            newZoom = Math.min(zoomLevel + step, 2); // 最大200%
         } else {
-            zoomLevel = Math.max(zoomLevel * scaleFactor, 1);
+            // 缩小
+            newZoom = Math.max(zoomLevel - step, 1); // 最小100%
         }
         
+        // 计算缩放比例
+        const scaleFactor = newZoom / prevZoom;
+        
+        // 计算以鼠标为中心的偏移量调整
+        const centerX = containerRect.width / 2;
+        const centerY = containerRect.height / 2;
+        
+        // 计算鼠标相对于容器中心的偏移
+        const offsetFromCenterX = mouseX - centerX;
+        const offsetFromCenterY = mouseY - centerY;
+        
+        // 应用新的缩放级别
+        zoomLevel = newZoom;
         isZoomed = zoomLevel > 1;
+        
+        // 调整拖动偏移以保持鼠标位置作为缩放中心
+        dragOffset.x += offsetFromCenterX * (1 - scaleFactor);
+        dragOffset.y += offsetFromCenterY * (1 - scaleFactor);
         
         // 如果缩放到1，重置位置
         if (zoomLevel === 1) {
@@ -748,7 +766,7 @@ function zoomIn() {
     const viewer = document.getElementById('fullscreen-viewer');
     if (!viewer || !viewer.classList.contains('active')) return;
     
-    zoomLevel = Math.min(zoomLevel * 1.2, 3);
+    zoomLevel = Math.min(zoomLevel + 0.2, 2); // 步进20%，最大200%
     isZoomed = zoomLevel > 1;
     updateTransformImmediate();
 }
@@ -757,7 +775,7 @@ function zoomOut() {
     const viewer = document.getElementById('fullscreen-viewer');
     if (!viewer || !viewer.classList.contains('active')) return;
     
-    zoomLevel = Math.max(zoomLevel / 1.2, 1);
+    zoomLevel = Math.max(zoomLevel - 0.2, 1); // 步进20%，最小100%
     isZoomed = zoomLevel > 1;
     
     // 如果缩放到1，重置位置
