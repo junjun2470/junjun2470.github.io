@@ -466,13 +466,15 @@ function bindViewerEventListeners() {
     });
 
     container.addEventListener('touchstart', (e) => {
+        // 如果双指操作，不处理单指逻辑
         if (e.touches.length === 1) {
-            // 只有在缩放状态下才记录触摸位置，防止未缩放时发生位移
-            if (isZoomed) {
-                touchStart.x = e.touches[0].clientX;
-                touchStart.y = e.touches[0].clientY;
-            }
+            // 保存触摸起始位置，用于判断是点击还是滑动
+            touchStart.x = e.touches[0].clientX;
+            touchStart.y = e.touches[0].clientY;
+            touchStart.time = Date.now();
+            touchStart.count = 1;
         } else if (e.touches.length === 2) {
+            touchStart.count = 2;
             // 计算双指距离
             const distance = Math.hypot(
                 e.touches[0].clientX - e.touches[1].clientX,
@@ -488,19 +490,25 @@ function bindViewerEventListeners() {
             const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
             container.dataset.pinchCenterX = centerX;
             container.dataset.pinchCenterY = centerY;
+            
+            // 重置单指触摸位置，避免误触发拖动
+            touchStart.x = centerX;
+            touchStart.y = centerY;
         }
         e.preventDefault();
     }, { passive: false });
 
     container.addEventListener('touchmove', (e) => {
+        // 如果是单指操作且已放大，允许拖动
         if (e.touches.length === 1 && isZoomed) {
-            // 单指拖动
             const deltaX = e.touches[0].clientX - touchStart.x;
             const deltaY = e.touches[0].clientY - touchStart.y;
             
+            // 更新偏移量
             dragOffset.x += deltaX;
             dragOffset.y += deltaY;
             
+            // 更新触摸起始位置
             touchStart.x = e.touches[0].clientX;
             touchStart.y = e.touches[0].clientY;
             
@@ -515,6 +523,16 @@ function bindViewerEventListeners() {
             const prevDistance = parseFloat(container.dataset.pinchDistance);
             const initialZoom = parseFloat(container.dataset.initialZoom);
             const prevZoom = zoomLevel;
+            
+            // 如果是第一次双指触摸，初始化数据
+            if (!prevDistance || isNaN(prevDistance)) {
+                container.dataset.pinchDistance = distance;
+                container.dataset.initialZoom = zoomLevel;
+                container.dataset.pinchCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                container.dataset.pinchCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                e.preventDefault();
+                return;
+            }
             
             // 计算当前双指中心点（相对于屏幕）
             const currentCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
@@ -562,18 +580,14 @@ function bindViewerEventListeners() {
     }, { passive: false });
 
     container.addEventListener('touchend', (e) => {
-        // 只有在未缩放状态下才处理滑动切换图片
         if (e.changedTouches.length === 1 && !isZoomed) {
-            // 确保touchStart已初始化
-            if (touchStart.x !== undefined && touchStart.y !== undefined) {
-                const deltaX = e.changedTouches[0].clientX - touchStart.x;
-                const threshold = 50;
-                
-                if (deltaX > threshold) {
-                    prevImage();
-                } else if (deltaX < -threshold) {
-                    nextImage();
-                }
+            const deltaX = e.changedTouches[0].clientX - touchStart.x;
+            const threshold = 50;
+            
+            if (deltaX > threshold) {
+                prevImage();
+            } else if (deltaX < -threshold) {
+                nextImage();
             }
         }
         e.preventDefault();
