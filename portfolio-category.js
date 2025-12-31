@@ -513,7 +513,7 @@ function bindViewerEventListeners() {
             
             updateTransformImmediate();
         } else if (e.touches.length === 2) {
-            // 双指缩放
+            // 双指缩放 - 优化版本，保持中心点
             const distance = Math.hypot(
                 e.touches[0].clientX - e.touches[1].clientX,
                 e.touches[0].clientY - e.touches[1].clientY
@@ -522,28 +522,39 @@ function bindViewerEventListeners() {
             const prevDistance = parseFloat(container.dataset.pinchDistance);
             const initialZoom = parseFloat(container.dataset.initialZoom);
             
-            // 计算新的缩放级别
+            // 计算当前双指中心点
+            const currentCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+            const currentCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+            
+            // 计算缩放比例
             const scale = distance / prevDistance;
-            zoomLevel = Math.min(Math.max(initialZoom * scale, 1), 3);
-            isZoomed = zoomLevel > 1;
+            const newZoomLevel = Math.min(Math.max(initialZoom * scale, 1), 3);
             
-            // 更新距离
-            container.dataset.pinchDistance = distance;
-            
-            // 计算新的中心点偏移，保持缩放中心
-            const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-            const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+            // 计算中心点偏移，保持缩放中心
             const prevCenterX = parseFloat(container.dataset.pinchCenterX);
             const prevCenterY = parseFloat(container.dataset.pinchCenterY);
             
-            // 调整拖动偏移以保持缩放中心
-            const scaleDiff = scale - 1;
-            dragOffset.x -= (centerX - prevCenterX) * scaleDiff;
-            dragOffset.y -= (centerY - prevCenterY) * scaleDiff;
+            // 获取容器中心点
+            const containerRect = container.getBoundingClientRect();
+            const containerCenterX = containerRect.left + containerRect.width / 2;
+            const containerCenterY = containerRect.top + containerRect.height / 2;
             
-            // 更新中心点
-            container.dataset.pinchCenterX = centerX;
-            container.dataset.pinchCenterY = centerY;
+            // 计算相对于容器中心的偏移
+            const offsetX = containerCenterX - prevCenterX;
+            const offsetY = containerCenterY - prevCenterY;
+            
+            // 应用新的缩放级别
+            zoomLevel = newZoomLevel;
+            isZoomed = zoomLevel > 1;
+            
+            // 调整拖动偏移以保持缩放中心
+            dragOffset.x = offsetX * (1 - newZoomLevel) + dragOffset.x * scale;
+            dragOffset.y = offsetY * (1 - newZoomLevel) + dragOffset.y * scale;
+            
+            // 更新数据
+            container.dataset.pinchDistance = distance;
+            container.dataset.pinchCenterX = currentCenterX;
+            container.dataset.pinchCenterY = currentCenterY;
             
             updateTransformImmediate();
         }
@@ -564,23 +575,36 @@ function bindViewerEventListeners() {
     });
 
     let lastTap = 0;
+    let tapTimeout = null;
+    
+    // 防抖动处理的双击事件
     container.addEventListener('click', (e) => {
         const currentTime = new Date().getTime();
         const tapLength = currentTime - lastTap;
         
-        if (tapLength < 300 && tapLength > 0) {
-            if (isZoomed) {
-                zoomLevel = 1;
-                isZoomed = false;
-                dragOffset = { x: 0, y: 0 };
-            } else {
-                zoomLevel = 2;
-                isZoomed = true;
-            }
-            
-            updateTransformImmediate();
-            e.preventDefault();
+        // 清除之前的超时
+        if (tapTimeout) {
+            clearTimeout(tapTimeout);
+            tapTimeout = null;
         }
+        
+        // 如果是快速双击（300毫秒内）
+        if (tapLength < 300 && tapLength > 0) {
+            // 设置超时以处理双击
+            tapTimeout = setTimeout(() => {
+                if (isZoomed) {
+                    zoomLevel = 1;
+                    isZoomed = false;
+                    dragOffset = { x: 0, y: 0 };
+                } else {
+                    zoomLevel = 2;
+                    isZoomed = true;
+                }
+                
+                updateTransformImmediate();
+            }, 50); // 50毫秒延迟确保是双击而非两次单击
+        }
+        
         lastTap = currentTime;
     });
 
