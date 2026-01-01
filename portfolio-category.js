@@ -393,6 +393,20 @@ function openViewer(index) {
             // 平滑过渡到不透明和可见
             viewer.style.opacity = '1';
             viewer.style.visibility = 'visible';
+            
+            // 显示双击提示，0.75秒后隐藏
+            const hint = document.getElementById('double-tap-hint');
+            if (hint) {
+                // 延迟一点显示，让全屏查看器先显示出来
+                setTimeout(() => {
+                    hint.style.opacity = '1';
+                    
+                    // 0.75秒后隐藏
+                    setTimeout(() => {
+                        hint.style.opacity = '0';
+                    }, 750);
+                }, 300);
+            }
         });
     });
     

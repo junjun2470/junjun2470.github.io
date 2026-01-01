@@ -315,7 +315,28 @@ html {
 #viewer-title {
     color: #FFFFFF !important;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-    transition: text-shadow 0.3s ease, opacity 0.3s ease;
+    transition: text-shadow 0.3s ease, color 0.3s ease;
+}
+
+/* 双击提示弹窗样式 - 参考关闭按钮配色 */
+#double-tap-hint {
+    background-color: rgba(0, 0, 0, 0.8); /* 参考关闭按钮的深色背景 */
+    color: #ffffff; /* 白色文本，与关闭按钮一致 */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-weight: 500;
+    font-size: 14px;
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+}
+
+/* 浅色模式适配 - 参考关闭按钮配色 */
+.light #double-tap-hint {
+    background-color: rgba(0, 0, 0, 0.7); /* 保持深色背景以确保文字清晰 */
+    color: #ffffff; /* 白色文本，确保清晰可见 */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 #viewer-caption {
